@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>G2: basin matrix, everything at once</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sofia+Sans+Condensed:wght@400;600;800&display=swap">
+<style>
+body{margin:0}
+a{color:#8FC3FF}a:hover{color:#C4DFFF}
+</style>
+</helmet>
+<div style="width: 880px; height: 600px; box-sizing: border-box; background: #142230; color: #EAF0F5; font-family: 'Sofia Sans Condensed', 'Arial Narrow', sans-serif; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px">
+<header style="display: flex; justify-content: space-between; align-items: baseline">
+<h1 style="margin: 0; font-size: 28px; font-weight: 800">Every basin, every variable</h1>
+<span style="font-size: 18px; color: #B9C7D3">Change per decade, 1981 to 2025</span>
+</header>
+<table style="width: 100%; border-collapse: separate; border-spacing: 6px; font-size: 19px; font-variant-numeric: tabular-nums; flex: 1">
+<thead>
+<tr>
+<th scope="col" style="text-align: left; font-weight: 400; color: #B9C7D3; width: 150px">Basin</th>
+<th scope="col" style="text-align: left; font-weight: 400; color: #B9C7D3">Snow depth</th>
+<th scope="col" style="text-align: left; font-weight: 400; color: #B9C7D3">Snowfall</th>
+<th scope="col" style="text-align: left; font-weight: 400; color: #B9C7D3">Rain and snow</th>
+<th scope="col" style="text-align: left; font-weight: 400; color: #B9C7D3">Air temperature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th scope="row" style="text-align: left; font-size: 24px; font-weight: 800">Naryn<span style="display: block; font-size: 16px; font-weight: 400; color: #B9C7D3">Tien Shan</span></th>
+<td style="background: #8FC3FF; color: #142230; padding: 10px 12px; font-weight: 800; font-size: 24px">+0.20 cm<span style="display: block; font-size: 16px; font-weight: 600">rising, proven</span></td>
+<td style="background: #8FC3FF; color: #142230; padding: 10px 12px; font-weight: 800; font-size: 24px">+0.062 mm<span style="display: block; font-size: 16px; font-weight: 600">rising, proven</span></td>
+<td style="background: #8FC3FF; color: #142230; padding: 10px 12px; font-weight: 800; font-size: 24px">+0.166 mm<span style="display: block; font-size: 16px; font-weight: 600">rising, proven</span></td>
+<td style="border: 2px dashed #7F93A5; padding: 8px 10px; font-weight: 800; font-size: 24px">+0.07 °C<span style="display: block; font-size: 16px; font-weight: 400; color: #D5DEE6">not proven</span></td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; font-size: 24px; font-weight: 800">Vakhsh<span style="display: block; font-size: 16px; font-weight: 400; color: #B9C7D3">Pamir</span></th>
+<td style="background: #FFB866; color: #142230; padding: 10px 12px; font-weight: 800; font-size: 24px">−1.94 cm<span style="display: block; font-size: 16px; font-weight: 600">falling, proven</span></td>
+<td style="background: #FFB866; color: #142230; padding: 10px 12px; font-weight: 800; font-size: 24px">−0.081 mm<span style="display: block; font-size: 16px; font-weight: 600">falling, proven</span></td>
+<td style="background: #FFB866; color: #142230; padding: 10px 12px; font-weight: 800; font-size: 24px">−0.079 mm<span style="display: block; font-size: 16px; font-weight: 600">falling, proven</span></td>
+<td style="background: #8FC3FF; color: #142230; padding: 10px 12px; font-weight: 800; font-size: 24px">+0.52 °C<span style="display: block; font-size: 16px; font-weight: 600">rising, proven</span></td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; font-size: 24px; font-weight: 800">Chu<span style="display: block; font-size: 16px; font-weight: 400; color: #B9C7D3">Tien Shan</span></th>
+<td colspan="4" style="background: #1D3144; padding: 10px 12px; font-size: 18px; color: #B9C7D3">[CHU DATA NOT LOADED YET]</td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; font-size: 24px; font-weight: 800">Talas<span style="display: block; font-size: 16px; font-weight: 400; color: #B9C7D3">Tien Shan</span></th>
+<td colspan="4" style="background: #1D3144; padding: 10px 12px; font-size: 18px; color: #B9C7D3">[TALAS DATA NOT LOADED YET]</td>
+</tr>
+</tbody>
+</table>
+<p style="margin: 0; font-size: 21px; line-height: 1.3">Naryn is gaining snow. Vakhsh is losing snow and warming by half a degree every decade.</p>
+<p style="margin: 0; font-size: 16px; color: #B9C7D3">Snowfall and rain are in mm per day. Filled cells are proven changes (p below 0.05); a dashed cell is not proven.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":600}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

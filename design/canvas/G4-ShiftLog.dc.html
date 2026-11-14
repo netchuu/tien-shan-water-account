@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>G4: shift log, findings as sentences</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sofia+Sans+Condensed:wght@400;600;800&display=swap">
+<style>
+body{margin:0}
+a{color:#8FC3FF}a:hover{color:#C4DFFF}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 880px; height: 600px; box-sizing: border-box; background: #142230; color: #EAF0F5; font-family: 'Sofia Sans Condensed', 'Arial Narrow', sans-serif; padding: 22px 24px; display: flex; gap: 20px">
+<div style="flex: 1.7; display: flex; flex-direction: column; gap: 10px; min-width: 0">
+<h1 style="margin: 0; font-size: 28px; font-weight: 800">What the record says</h1>
+<h2 style="margin: 4px 0 0; font-size: 18px; font-weight: 400; color: #B9C7D3">Naryn, Tien Shan</h2>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; font-size: 21px; line-height: 1.25">
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #34495D"><span aria-hidden="true" style="width: 14px; height: 14px; background: #8FC3FF; flex: none"></span><span>Snow depth is rising by <strong>0.20 cm</strong> per decade. Proven.</span></li>
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #34495D"><span aria-hidden="true" style="width: 14px; height: 14px; background: #8FC3FF; flex: none"></span><span>Snowfall is rising by <strong>0.062 mm per day</strong> per decade. Proven.</span></li>
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #34495D"><span aria-hidden="true" style="width: 14px; height: 14px; background: #8FC3FF; flex: none"></span><span>Rain and snow together are rising by <strong>0.166 mm per day</strong> per decade. Proven.</span></li>
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0"><span aria-hidden="true" style="width: 14px; height: 14px; border: 2px dashed #B9C7D3; box-sizing: border-box; flex: none"></span><span>Air temperature shows no proven change (+0.07 °C per decade, p = 0.338).</span></li>
+</ul>
+<h2 style="margin: 8px 0 0; font-size: 18px; font-weight: 400; color: #B9C7D3">Vakhsh, Pamir</h2>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; font-size: 21px; line-height: 1.25">
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #34495D"><span aria-hidden="true" style="width: 14px; height: 14px; background: #FFB866; flex: none"></span><span>Snow depth is falling by <strong>1.94 cm</strong> per decade. Proven.</span></li>
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #34495D"><span aria-hidden="true" style="width: 14px; height: 14px; background: #FFB866; flex: none"></span><span>Snowfall is falling by <strong>0.081 mm per day</strong> per decade. Proven.</span></li>
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #34495D"><span aria-hidden="true" style="width: 14px; height: 14px; background: #FFB866; flex: none"></span><span>Rain and snow together are falling by <strong>0.079 mm per day</strong> per decade. Proven.</span></li>
+<li style="display: flex; gap: 12px; align-items: baseline; padding: 7px 0"><span aria-hidden="true" style="width: 14px; height: 14px; background: #8FC3FF; flex: none"></span><span>Air temperature is rising by <strong>0.52 °C</strong> per decade. Proven.</span></li>
+</ul>
+</div>
+<aside style="flex: 1; background: #1D3144; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<h2 style="margin: 0; font-size: 20px; font-weight: 600">Read it as</h2>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<button type="button" aria-pressed="false" style="min-height: 44px; text-align: left; padding: 6px 14px; font-size: 19px; background: transparent; color: #EAF0F5; border: 1px solid #7F93A5; border-radius: 3px">Water engineer</button>
+<button type="button" aria-pressed="true" style="min-height: 44px; text-align: left; padding: 6px 14px; font-size: 19px; font-weight: 800; background: #EAF0F5; color: #142230; border: 1px solid #EAF0F5; border-radius: 3px">Dam dispatcher</button>
+<button type="button" aria-pressed="false" style="min-height: 44px; text-align: left; padding: 6px 14px; font-size: 19px; background: transparent; color: #EAF0F5; border: 1px solid #7F93A5; border-radius: 3px">Negotiator</button>
+</div>
+<p style="margin: 4px 0 0; font-size: 21px; line-height: 1.3">The two cascades are on different paths. Plan the Naryn drawdown with more snow in mind, and the Vakhsh drawdown with less.</p>
+<p style="margin: auto 0 0; font-size: 16px; color: #B9C7D3; line-height: 1.35">Record of 1981 to 2025 from a NASA model. Past trend, not a forecast.</p>
+</aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":600}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

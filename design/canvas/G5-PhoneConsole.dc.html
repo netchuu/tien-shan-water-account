@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>G5: phone console</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sofia+Sans+Condensed:wght@400;600;800&display=swap">
+<style>
+body{margin:0}
+a{color:#8FC3FF}a:hover{color:#C4DFFF}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="width: 390px; height: 780px; box-sizing: border-box; background: #142230; color: #EAF0F5; font-family: 'Sofia Sans Condensed', 'Arial Narrow', sans-serif; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px">
+<h1 style="margin: 0; font-size: 24px; font-weight: 800">Snow above the cascade</h1>
+<div style="display: flex; gap: 8px">
+<button type="button" aria-pressed="false" style="flex: 1; min-height: 46px; font-size: 20px; font-weight: 600; background: transparent; color: #EAF0F5; border: 1px solid #7F93A5; border-radius: 3px">Naryn</button>
+<button type="button" aria-pressed="true" style="flex: 1; min-height: 46px; font-size: 20px; font-weight: 800; background: #EAF0F5; color: #142230; border: 1px solid #EAF0F5; border-radius: 3px">Vakhsh</button>
+</div>
+<section style="background: #1D3144; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 19px; font-weight: 600">Snow depth, Pamir</h2>
+<span style="font-size: 78px; font-weight: 800; line-height: 0.95; color: #FFB866; letter-spacing: -1px">−1.94</span>
+<span style="font-size: 21px">cm per decade, falling, proven</span>
+<svg viewBox="0 0 400 120" preserveAspectRatio="none" role="img" aria-label="Vakhsh yearly snow depth, 1981 to 2025, with a falling trend line" style="display: block; width: 100%; height: 120px; margin-top: 6px">
+<path d="M6.0 23.3 L14.8 41.4 L23.6 89.8 L32.5 63.4 L41.3 79.3 L50.1 81.5 L58.9 13.4 L67.7 52.8 L76.5 78.2 L85.4 49.4 L94.2 27.6 L103.0 40.2 L111.8 56.1 L120.6 72.2 L129.5 75.6 L138.3 76.2 L147.1 91.7 L155.9 82.7 L164.7 85.5 L173.5 94.9 L182.4 94.0 L191.2 94.1 L200.0 87.4 L208.8 76.1 L217.6 84.0 L226.5 77.6 L235.3 98.1 L244.1 96.9 L252.9 95.1 L261.7 87.6 L270.5 93.6 L279.4 91.9 L288.2 106.6 L297.0 95.2 L305.8 87.3 L314.6 88.5 L323.5 64.1 L332.3 87.6 L341.1 88.6 L349.9 69.7 L358.7 34.5 L367.5 82.6 L376.4 89.4 L385.2 46.7 L394.0 94.2" style="fill: none; stroke: #7F93A5; stroke-width: 1.5; vector-effect: non-scaling-stroke"></path>
+<path d="M6.0 67.5 L394.0 93.1" style="fill: none; stroke: #FFB866; stroke-width: 3.5; vector-effect: non-scaling-stroke"></path>
+</svg>
+<div style="display: flex; justify-content: space-between; font-size: 16px; color: #B9C7D3"><span>1981</span><span>p = 0.003</span><span>2025</span></div>
+</section>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; font-size: 20px; font-variant-numeric: tabular-nums">
+<li style="display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #34495D"><span>Snowfall</span><span><strong style="color: #FFB866">−0.081 mm</strong> falling</span></li>
+<li style="display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #34495D"><span>Rain and snow</span><span><strong style="color: #FFB866">−0.079 mm</strong> falling</span></li>
+<li style="display: flex; justify-content: space-between; gap: 10px; padding: 9px 0"><span>Air temperature</span><span><strong style="color: #8FC3FF">+0.52 °C</strong> rising</span></li>
+</ul>
+<p style="margin: auto 0 0; background: #EAF0F5; color: #142230; padding: 12px 14px; font-size: 19px; line-height: 1.3; border-radius: 3px"><strong>For the dam dispatcher.</strong> All three changes are proven. Plan the winter drawdown with less mountain snow in mind.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":780}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

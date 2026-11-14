@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tien Shan Water Account: statement</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;800&display=swap">
+<style>
+body{margin:0}
+a{color:#1D4E89}a:hover{color:#123459}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid #FFFFFF;outline-offset:3px}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: {{ ground }}; color: #FFFFFF; font-family: 'Golos Text', 'Segoe UI', system-ui, sans-serif; font-size: 16px; line-height: 1.5">
+<div style="display: flex; flex-wrap: wrap; gap: 40px; padding: 40px 32px 56px; max-width: 1360px; margin: 0 auto; box-sizing: border-box">
+
+<div style="flex: 1 1 290px; max-width: 380px; display: flex; flex-direction: column; gap: 30px">
+<header style="display: flex; flex-direction: column; gap: 12px">
+<h1 style="margin: 0; font-weight: 800; font-size: 38px; line-height: 1.02; letter-spacing: -0.8px">Tien Shan Water Account</h1>
+<p style="margin: 0; font-size: 17px; color: #D4E6E4">Ask how the mountain snow is changing. Get a statement you can take into a decision.</p>
+</header>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 500; color: #D4E6E4">Which basin?</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ basins }}" as="b" hint-placeholder-count="2">
+<button type="button" onClick="{{ b.pick }}" aria-pressed="{{ b.pressed }}" style="min-height: 46px; padding: 8px 16px; border-radius: 4px; font-size: 17px; font-weight: 600; background: {{ b.bg }}; color: {{ b.fg }}; border: 1px solid {{ b.bd }}">{{ b.name }}, {{ b.range }}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 500; color: #D4E6E4">What do you want to check?</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ variables }}" as="v" hint-placeholder-count="4">
+<button type="button" onClick="{{ v.pick }}" aria-pressed="{{ v.pressed }}" style="min-height: 46px; padding: 8px 16px; border-radius: 4px; font-size: 17px; font-weight: 600; background: {{ v.bg }}; color: {{ v.fg }}; border: 1px solid {{ v.bd }}">{{ v.label }}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 15px; color: #D4E6E4">{{ definition }}</p>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 500; color: #D4E6E4">Who is the statement for?</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+<button type="button" onClick="{{ r.pick }}" aria-pressed="{{ r.pressed }}" style="min-height: 46px; padding: 8px 16px; border-radius: 4px; font-size: 17px; font-weight: 600; background: {{ r.bg }}; color: {{ r.fg }}; border: 1px solid {{ r.bd }}">{{ r.label }}</button>
+</sc-for>
+</div>
+</div>
+
+<p style="margin: 0; font-size: 14px; color: #D4E6E4; border-top: 1px solid #6FA09D; padding-top: 16px">This prototype runs on stand-in data: NASA POWER yearly averages for one mountain grid cell per basin. The finished app will use GLDAS and MODIS averages over each whole basin.</p>
+</div>
+
+<main style="flex: 999 1 560px; min-width: 0; background: #FBFCFB; color: #10262B; border-radius: 3px; padding: 40px 44px 44px; box-sizing: border-box; display: flex; flex-direction: column; gap: 30px">
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: flex-start; justify-content: space-between">
+<div style="flex: 1 1 380px; display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 15px; color: #46595C">Statement for the {{ basinName }} basin, {{ rangeName }}, 1981 to 2025</p>
+<h2 style="margin: 0; font-weight: 800; font-size: 40px; line-height: 1.08; letter-spacing: -0.8px; max-width: 16em; text-wrap: balance">{{ headline }}</h2>
+<p style="margin: 0; font-size: 18px; max-width: 34em">{{ headlineNote }}</p>
+</div>
+<div style="transform: rotate(-5deg); margin: 8px 8px 0 0; border: 3px solid {{ stampColor }}; color: {{ stampColor }}; border-radius: 5px; padding: 8px 16px 9px; display: flex; flex-direction: column; align-items: center; gap: 2px">
+<span style="font-weight: 800; font-size: 24px; letter-spacing: 2px; text-transform: uppercase; line-height: 1.1; white-space: nowrap">{{ stampLabel }}</span>
+<span style="font-size: 14px; font-weight: 500; white-space: nowrap">Mann-Kendall test, {{ pText }}</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="overflow-x: auto">
+<svg viewBox="0 0 760 300" role="img" aria-label="{{ chartAria }}" style="display: block; width: 100%; min-width: 500px; height: auto">
+<path d="{{ gridD }}" style="fill: none; stroke: #DCE3E2; stroke-width: 1"></path>
+<path d="{{ gaugeD }}" style="fill: #10262B; stroke: none"></path>
+<path d="{{ gaugeFrameD }}" style="fill: none; stroke: #10262B; stroke-width: 1"></path>
+<path d="{{ lineD }}" style="fill: none; stroke: #9AA9AA; stroke-width: 1.25"></path>
+<path d="{{ dotsD }}" style="fill: #10262B; stroke: none"></path>
+<path d="{{ trendD }}" style="fill: none; stroke: {{ trendColor }}; stroke-width: 3.5; stroke-dasharray: {{ trendDash }}"></path>
+<sc-for list="{{ yTicks }}" as="t" hint-placeholder-count="5">
+<text x="{{ t.x }}" y="{{ t.y }}" style="font-size: 13px; fill: #46595C; text-anchor: end; font-variant-numeric: tabular-nums">{{ t.label }}</text>
+</sc-for>
+<sc-for list="{{ xTicks }}" as="t" hint-placeholder-count="5">
+<text x="{{ t.x }}" y="{{ t.y }}" style="font-size: 13px; fill: #46595C; text-anchor: middle; font-variant-numeric: tabular-nums">{{ t.label }}</text>
+</sc-for>
+</svg>
+</div>
+<p style="margin: 0; font-size: 14px; color: #46595C">Each dot is one year's average, in {{ unit }}. {{ trendLegend }}</p>
+</div>
+
+<dl style="margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 0 36px">
+<sc-for list="{{ ledger }}" as="row" hint-placeholder-count="4">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 11px 0; border-bottom: 1px solid #C6D1D0">
+<dt style="font-size: 15px; color: #46595C">{{ row.k }}</dt>
+<dd style="margin: 0; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right">{{ row.v }}</dd>
+</div>
+</sc-for>
+</dl>
+
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 44em">
+<h3 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.2px">{{ roleTitle }}</h3>
+<p style="margin: 0; font-size: 18px">{{ stMeans }}</p>
+<p style="margin: 0; font-size: 14px; color: #46595C">{{ roleWho }} The numbers come from the calculation above; the wording is a fixed template.</p>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h3 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.2px">The same question in both ranges</h3>
+<div style="overflow-x: auto">
+<table style="width: 100%; min-width: 520px; border-collapse: collapse; font-size: 17px">
+<thead>
+<tr>
+<th scope="col" style="text-align: left; font-weight: 500; font-size: 14px; color: #46595C; padding: 6px 12px 6px 0; border-bottom: 1px solid #10262B">Basin</th>
+<th scope="col" style="text-align: left; font-weight: 500; font-size: 14px; color: #46595C; padding: 6px 12px; border-bottom: 1px solid #10262B">1981 to 2025</th>
+<th scope="col" style="text-align: right; font-weight: 500; font-size: 14px; color: #46595C; padding: 6px 12px; border-bottom: 1px solid #10262B">Change per decade</th>
+<th scope="col" style="text-align: left; font-weight: 500; font-size: 14px; color: #46595C; padding: 6px 0 6px 12px; border-bottom: 1px solid #10262B">Verdict</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ compare }}" as="c" hint-placeholder-count="2">
+<tr>
+<th scope="row" style="text-align: left; font-weight: 600; padding: 10px 12px 10px 0; border-bottom: 1px solid #C6D1D0; white-space: nowrap">{{ c.name }}, {{ c.range }}</th>
+<td style="padding: 6px 12px; border-bottom: 1px solid #C6D1D0; width: 34%">
+<svg viewBox="0 0 240 44" aria-hidden="true" style="display: block; width: 100%; max-width: 260px; height: auto">
+<path d="{{ c.lineD }}" style="fill: none; stroke: #9AA9AA; stroke-width: 1.25"></path>
+<path d="{{ c.trendD }}" style="fill: none; stroke: {{ c.color }}; stroke-width: 3; stroke-dasharray: {{ c.dash }}"></path>
+</svg>
+</td>
+<td style="text-align: right; padding: 10px 12px; border-bottom: 1px solid #C6D1D0; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap">{{ c.change }} {{ c.unit }}</td>
+<td style="padding: 10px 0 10px 12px; border-bottom: 1px solid #C6D1D0; white-space: nowrap">{{ c.verdict }} <span style="font-size: 14px; color: #46595C">({{ c.p }})</span></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<p style="margin: 0; font-size: 18px; max-width: 44em">{{ compareNote }}</p>
+</div>
+
+<p style="margin: 0; font-size: 14px; color: #46595C; max-width: 60em">Read this as a record of the past, not a forecast. The values come from a NASA model with cells about 50 km wide and no glaciers in it, so it cannot show ice loss. Cells used here: Naryn at 41.9°N 78.2°E, 3,394 m; Vakhsh at 38.9°N 72.2°E, 4,539 m.</p>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"ground":{"editor":"color","default":"#12525C","options":["#12525C","#1D3F6E","#3A4A3D"]},"$preview":{"width":1320,"height":1620}}'>
+class Component extends DCLogic {
+  data() {
+    return {
+      naryn: { name: 'Naryn', range: 'Tien Shan', series: {
+        snow: [13.68,12.09,12.85,12.58,12.28,12.74,13.19,12.91,13.19,12.04,12.01,12.91,13.57,12.46,11.36,13.11,10.42,12.32,13.26,13.18,12.72,12.35,13.19,12.6,11.99,12.88,11.38,11.33,13.81,12.94,13.18,12.56,11.9,12.01,14.06,12.7,13.18,14.08,13.39,14.9,13.14,13.89,12.6,13.6,14.47],
+        snowfall: [0.56,0.21,0.29,0.23,0.23,0.26,0.39,0.28,0.24,0.21,0.23,0.26,0.41,0.32,0.26,0.26,0.18,0.33,0.36,0.35,0.31,0.4,0.45,0.42,0.3,0.31,0.25,0.23,0.43,0.48,0.41,0.32,0.38,0.2,0.49,0.48,0.44,0.44,0.44,0.63,0.6,0.61,0.34,0.44,0.77],
+        precip: [1.23,0.5,0.5,0.38,0.49,0.57,0.66,0.66,0.44,0.6,0.46,0.49,0.74,0.6,0.47,0.48,0.43,0.8,0.94,0.98,0.83,0.82,0.85,0.78,0.8,0.72,0.64,0.66,0.83,1.16,1.01,0.8,0.88,0.64,1.01,1.29,1.0,0.96,1.04,1.25,2.31,1.24,0.91,1.2,1.32],
+        temp: [-3.73,-3.54,-2.8,-3.46,-2.58,-2.82,-2.88,-2.77,-3.61,-2.38,-2.82,-2.64,-3.42,-3.26,-3.41,-3.43,-1.87,-2.41,-2.57,-3.43,-2.58,-2.27,-3.38,-2.83,-3.0,-2.25,-2.06,-2.41,-3.37,-2.94,-3.17,-3.87,-2.49,-3.26,-2.68,-2.86,-3.21,-3.08,-2.88,-3.73,-3.48,-2.85,-2.43,-2.55,-1.89]
+      } },
+      vakhsh: { name: 'Vakhsh', range: 'Pamir', series: {
+        snow: [34.99,28.96,12.82,21.62,16.34,15.59,38.28,25.15,16.7,26.29,33.58,29.36,24.06,18.7,17.55,17.36,12.19,15.21,14.28,11.13,11.44,11.4,13.62,17.41,14.75,16.9,10.06,10.48,11.07,13.55,11.56,12.12,7.25,11.03,13.66,13.27,21.4,13.55,13.22,19.53,31.27,15.24,12.95,27.19,11.38],
+        snowfall: [1.46,0.57,0.43,0.85,0.46,0.57,1.36,0.73,0.55,1.03,1.12,0.88,0.99,0.55,0.48,0.73,0.35,0.55,0.52,0.37,0.33,0.31,0.54,0.55,0.4,0.49,0.4,0.26,0.26,0.35,0.31,0.22,0.11,0.45,0.41,0.46,0.54,0.37,0.48,1.02,0.73,0.77,0.23,0.99,0.28],
+        precip: [1.57,0.58,0.45,0.86,0.47,0.58,1.38,0.75,0.57,1.15,1.19,0.91,1.06,0.57,0.49,0.78,0.4,0.59,0.53,0.38,0.34,0.32,0.56,0.57,0.41,0.5,0.43,0.26,0.26,0.37,0.31,0.22,0.11,0.52,0.44,0.55,0.63,0.4,0.5,1.24,0.77,0.88,0.26,1.09,0.32],
+        temp: [-10.47,-10.61,-9.27,-10.16,-9.06,-9.28,-10.48,-9.17,-11.19,-9.38,-10.25,-9.92,-10.33,-9.62,-9.7,-10.1,-8.45,-8.57,-9.68,-9.89,-9.17,-8.85,-9.6,-8.69,-9.21,-8.37,-8.13,-8.5,-8.83,-8.13,-8.38,-9.47,-7.77,-8.7,-8.44,-7.6,-8.74,-8.17,-8.68,-9.46,-9.17,-8.03,-7.67,-8.63,-7.13]
+      } }
+    };
+  }
+  vars() {
+    return {
+      snow: { label: 'Snow depth', lower: 'snow depth', unit: 'cm', dec: 2, pct: true, def: 'Snow depth is how deep the snow lies on the ground, averaged over the year.' },
+      snowfall: { label: 'Snowfall', lower: 'snowfall', unit: 'mm per day', dec: 3, pct: true, def: 'Snowfall is how much new snow arrives, counted as the water it holds.' },
+      precip: { label: 'Rain and snow', lower: 'rain and snow', unit: 'mm per day', dec: 3, pct: true, def: 'Rain and snow together: all the water that falls, per day on average.' },
+      temp: { label: 'Air temperature', lower: 'air temperature', unit: '°C', dec: 2, pct: false, def: 'Air temperature is measured 2 metres above the ground and averaged over the year.' }
+    };
+  }
+  roleDefs() {
+    return {
+      engineer: { label: 'Water engineer', lower: 'a water engineer', who: 'Written for someone deciding in spring how much water to promise canals and farms for the summer.' },
+      dispatcher: { label: 'Dam dispatcher', lower: 'a dam dispatcher', who: 'Written for someone deciding in autumn how much water to release for electricity and how much to keep for summer.' },
+      negotiator: { label: 'Negotiator', lower: 'a negotiator', who: 'Written for someone agreeing water limits and release schedules between countries.' }
+    };
+  }
+  median(a) { const s = a.slice().sort((x, y) => x - y); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+  phi(z) {
+    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+    const d = 0.3989423 * Math.exp(-z * z / 2);
+    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return z > 0 ? 1 - p : p;
+  }
+  stats(y) {
+    const n = y.length; let s = 0; const sl = [];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const d = y[j] - y[i]; s += d > 0 ? 1 : d < 0 ? -1 : 0; sl.push(d / (j - i)); }
+    const slope = this.median(sl);
+    const v = n * (n - 1) * (2 * n + 5) / 18;
+    const z = s === 0 ? 0 : (s - (s > 0 ? 1 : -1)) / Math.sqrt(v);
+    const p = 2 * (1 - this.phi(Math.abs(z)));
+    const icpt = this.median(y.map((val, i) => val - slope * i));
+    const mean = y.reduce((a, b) => a + b, 0) / n;
+    return { slope, p, icpt, mean, sig: p < 0.05 };
+  }
+  fmt(x, dec) { return (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(dec); }
+  num(x, dec) { return (x < 0 ? '−' : '') + Math.abs(x).toFixed(dec); }
+  pText(p) { return p < 0.001 ? 'p below 0.001' : 'p = ' + p.toFixed(3); }
+  ink(st) { return !st.sig ? '#5C6B6D' : st.slope > 0 ? '#1D4E89' : '#A6541B'; }
+  paths(y, st, W, H, l, r, t, b) {
+    const n = y.length; let lo = Math.min.apply(null, y), hi = Math.max.apply(null, y);
+    const pad = (hi - lo) * 0.08 || 1; lo -= pad; hi += pad;
+    const X = (i) => l + i * (W - l - r) / (n - 1);
+    const Y = (v) => t + (hi - v) * (H - t - b) / (hi - lo);
+    const f = (x) => x.toFixed(1);
+    const lineD = y.map((v, i) => (i ? 'L' : 'M') + f(X(i)) + ' ' + f(Y(v))).join(' ');
+    const dotsD = y.map((v, i) => 'M' + f(X(i) - 3.2) + ' ' + f(Y(v)) + ' a3.2 3.2 0 1 0 6.4 0 a3.2 3.2 0 1 0 -6.4 0').join(' ');
+    const trendD = 'M' + f(X(0)) + ' ' + f(Y(st.icpt)) + ' L' + f(X(n - 1)) + ' ' + f(Y(st.icpt + st.slope * (n - 1)));
+    return { lineD, dotsD, trendD, X, Y, lo, hi };
+  }
+  renderVals() {
+    const D = this.data(), V = this.vars(), R = this.roleDefs();
+    const st8 = this.state || {};
+    const bk = st8.basin || 'naryn', vk = st8.variable || 'snow', rk = st8.role || 'dispatcher';
+    const ground = this.props.ground ?? '#12525C';
+    const on = { bg: '#FBFCFB', fg: '#0E3F47', bd: '#FBFCFB' }, off = { bg: 'transparent', fg: '#FFFFFF', bd: '#8FB9B6' };
+    const B = D[bk], vr = V[vk], y = B.series[vk], s = this.stats(y);
+    const W = 760, H = 300, l = 70, r = 14, t = 12, b = 34;
+    const p = this.paths(y, s, W, H, l, r, t, b);
+    const tdec = vr.dec > 2 ? 2 : 1;
+    const tickVals = [0, 1, 2, 3, 4].map((k) => p.lo + (p.hi - p.lo) * k / 4);
+    const yTicks = tickVals.map((val) => ({ x: l - 20, y: p.Y(val) + 4.5, label: this.num(val, tdec) }));
+    const gridD = tickVals.map((val) => 'M' + l + ' ' + p.Y(val).toFixed(1) + ' L' + (W - r) + ' ' + p.Y(val).toFixed(1)).join(' ');
+    const gx = l - 12, gw = 7;
+    const gaugeD = [0, 2].map((k) => { const y1 = p.Y(tickVals[k + 1]), y2 = p.Y(tickVals[k]); return 'M' + gx + ' ' + y1.toFixed(1) + ' h' + gw + ' v' + (y2 - y1).toFixed(1) + ' h-' + gw + ' Z'; }).join(' ');
+    const gaugeFrameD = 'M' + gx + ' ' + p.Y(tickVals[4]).toFixed(1) + ' h' + gw + ' V' + p.Y(tickVals[0]).toFixed(1) + ' h-' + gw + ' Z';
+    const xTicks = [1985, 1995, 2005, 2015, 2025].map((yr) => ({ x: p.X(yr - 1981), y: H - 8, label: String(yr) }));
+    const perDec = s.slope * 10;
+    const changeText = this.fmt(perDec, vr.dec);
+    const amount = Math.abs(perDec).toFixed(vr.dec) + ' ' + vr.unit;
+    const dir = perDec > 0 ? 'risen' : 'fallen';
+    const headline = s.sig
+      ? vr.label + ' in the ' + B.name + ' basin has ' + dir + ' by ' + amount + ' per decade.'
+      : 'No proven change in ' + vr.lower + ' in the ' + B.name + ' basin.';
+    const headlineNote = s.sig
+      ? 'The change is larger than the swings from one year to the next can explain.'
+      : 'The measured slope is ' + changeText + ' ' + vr.unit + ' per decade, but the swings from one year to the next are big enough to produce that by chance.';
+    const ledger = [
+      { k: 'Average over the record', v: this.num(s.mean, vr.dec) + ' ' + vr.unit },
+      { k: 'Change per decade', v: changeText + ' ' + vr.unit },
+      { k: 'Change over all 45 years', v: this.fmt(s.slope * 44, vr.dec) + ' ' + vr.unit }
+    ];
+    if (vr.pct) ledger.push({ k: 'Per decade, as a share of the average', v: this.fmt(perDec / s.mean * 100, 1) + '%' });
+    const means = {
+      engineer: s.sig ? 'Plan summer allocations with this change in mountain ' + vr.lower + ' in mind, and not only the old norms.' : 'This record gives you no reason to change allocation norms because of ' + vr.lower + '.',
+      dispatcher: s.sig ? 'Take this change in mountain ' + vr.lower + ' into account when you plan the winter drawdown.' : 'This record gives you no reason to change the drawdown plan because of ' + vr.lower + '.',
+      negotiator: s.sig ? 'Both sides can cite this figure. It is computed the same way for every basin, from open NASA data.' : 'Record this as not proven for both sides. It should not be used to argue for new limits.'
+    };
+    const mk = (key, cur, set, label) => { const c = key === cur ? on : off; return { label: label, pressed: key === cur ? 'true' : 'false', bg: c.bg, fg: c.fg, bd: c.bd, pick: () => this.setState(set) }; };
+    const basins = Object.keys(D).map((k) => Object.assign(mk(k, bk, { basin: k }, ''), { name: D[k].name, range: D[k].range }));
+    const variables = Object.keys(V).map((k) => mk(k, vk, { variable: k }, V[k].label));
+    const roles = Object.keys(R).map((k) => mk(k, rk, { role: k }, R[k].label));
+    const compare = Object.keys(D).map((k) => {
+      const yy = D[k].series[vk], ss = this.stats(yy), pp = this.paths(yy, ss, 240, 44, 3, 3, 5, 5);
+      return { name: D[k].name, range: D[k].range, color: this.ink(ss), dash: ss.sig ? 'none' : '6 5', lineD: pp.lineD, trendD: pp.trendD, change: this.fmt(ss.slope * 10, vr.dec), unit: vr.unit, p: this.pText(ss.p), verdict: ss.sig ? (ss.slope > 0 ? 'Rising, proven' : 'Falling, proven') : 'Not proven', sig: ss.sig, up: ss.slope > 0 };
+    });
+    const a = compare[0], c2 = compare[1];
+    const compareNote = (a.sig && c2.sig && a.up !== c2.up)
+      ? 'The two ranges are moving in opposite directions: ' + a.name + ' is ' + (a.up ? 'rising' : 'falling') + ' while ' + c2.name + ' is ' + (c2.up ? 'rising' : 'falling') + ', and both changes are proven.'
+      : (a.sig && c2.sig) ? 'Both ranges are moving the same way, and both changes are proven.'
+      : (a.sig || c2.sig) ? 'Only one of the two ranges shows a proven change here.'
+      : 'Neither range shows a proven change here.';
+    return {
+      ground, basins, variables, roles, compare, compareNote, ledger,
+      definition: vr.def, unit: vr.unit, basinName: B.name, rangeName: B.range,
+      headline, headlineNote,
+      stampLabel: s.sig ? 'Proven' : 'Not proven', stampColor: this.ink(s), pText: this.pText(s.p),
+      chartAria: 'Yearly ' + vr.lower + ' in the ' + B.name + ' basin from 1981 to 2025 with its trend line. Change per decade: ' + changeText + ' ' + vr.unit + '.',
+      gridD, gaugeD, gaugeFrameD, lineD: p.lineD, dotsD: p.dotsD, trendD: p.trendD, yTicks, xTicks,
+      trendColor: this.ink(s), trendDash: s.sig ? 'none' : '8 7',
+      trendLegend: s.sig ? 'The solid line is the proven trend.' : 'The dashed line is the measured slope, which is not proven.',
+      roleTitle: 'What it means for ' + R[rk].lower, roleWho: R[rk].who, stMeans: means[rk]
+    };
+  }
+}
+</script>
+</body>
+</html>

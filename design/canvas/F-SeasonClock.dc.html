@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Option F: season clock</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap">
+<style>
+body{margin:0}
+a{color:#1D4E89}a:hover{color:#123459}
+</style>
+</helmet>
+<div style="width: 880px; height: 600px; box-sizing: border-box; background: #FFFFFF; color: #171A1F; font-family: Jost, 'Century Gothic', sans-serif; display: flex; align-items: center; padding: 30px 40px; gap: 36px">
+<div role="img" aria-label="A year drawn as a clock. Outer ring: snowmelt arrives April to June. Inner ring: fields need water June to August, power demand peaks December to February." style="position: relative; width: 440px; height: 440px; flex: none">
+<div style="position: absolute; left: 60px; top: 60px; width: 320px; height: 320px; border-radius: 50%; background: conic-gradient(#E4E7EA 0deg 90deg, #1D4E89 90deg 180deg, #E4E7EA 180deg 360deg)"></div>
+<div style="position: absolute; left: 92px; top: 92px; width: 256px; height: 256px; border-radius: 50%; background: #FFFFFF"></div>
+<div style="position: absolute; left: 100px; top: 100px; width: 240px; height: 240px; border-radius: 50%; background: conic-gradient(#171A1F 0deg 60deg, #E4E7EA 60deg 150deg, #A6541B 150deg 240deg, #E4E7EA 240deg 330deg, #171A1F 330deg 360deg)"></div>
+<div style="position: absolute; left: 132px; top: 132px; width: 176px; height: 176px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 17px; font-weight: 500; line-height: 1.25; padding: 16px; box-sizing: border-box">Water arrives before the fields need it</div>
+<span style="position: absolute; left: 269px; top: 36px; transform: translate(-50%, -50%); font-size: 16px">Jan</span>
+<span style="position: absolute; left: 354px; top: 86px; transform: translate(-50%, -50%); font-size: 16px">Feb</span>
+<span style="position: absolute; left: 404px; top: 171px; transform: translate(-50%, -50%); font-size: 16px">Mar</span>
+<span style="position: absolute; left: 404px; top: 269px; transform: translate(-50%, -50%); font-size: 16px">Apr</span>
+<span style="position: absolute; left: 354px; top: 354px; transform: translate(-50%, -50%); font-size: 16px">May</span>
+<span style="position: absolute; left: 269px; top: 404px; transform: translate(-50%, -50%); font-size: 16px">Jun</span>
+<span style="position: absolute; left: 171px; top: 404px; transform: translate(-50%, -50%); font-size: 16px">Jul</span>
+<span style="position: absolute; left: 86px; top: 354px; transform: translate(-50%, -50%); font-size: 16px">Aug</span>
+<span style="position: absolute; left: 36px; top: 269px; transform: translate(-50%, -50%); font-size: 16px">Sep</span>
+<span style="position: absolute; left: 36px; top: 171px; transform: translate(-50%, -50%); font-size: 16px">Oct</span>
+<span style="position: absolute; left: 86px; top: 86px; transform: translate(-50%, -50%); font-size: 16px">Nov</span>
+<span style="position: absolute; left: 171px; top: 36px; transform: translate(-50%, -50%); font-size: 16px">Dec</span>
+</div>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0">
+<h1 style="margin: 0; font-size: 38px; font-weight: 700; line-height: 1.05; letter-spacing: -0.5px">One river, three calendars</h1>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 18px">
+<li style="display: flex; gap: 12px; align-items: center"><span aria-hidden="true" style="width: 22px; height: 22px; background: #1D4E89; flex: none"></span>Snowmelt arrives</li>
+<li style="display: flex; gap: 12px; align-items: center"><span aria-hidden="true" style="width: 22px; height: 22px; background: #A6541B; flex: none"></span>Fields need water</li>
+<li style="display: flex; gap: 12px; align-items: center"><span aria-hidden="true" style="width: 22px; height: 22px; background: #171A1F; flex: none"></span>Power demand peaks</li>
+</ul>
+<p style="margin: 0; font-size: 26px; font-weight: 700; line-height: 1.2">Snow leaves [N] days earlier each decade.</p>
+<p style="margin: 0; font-size: 16px; color: #454B54">The months on the rings and the figure in brackets are placeholders. They will be set from MODIS snow-cover data once it is downloaded.</p>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":600}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
