@@ -36,7 +36,8 @@ button, select { font-family: inherit; cursor: pointer; }
 
 .top, main, .foot { width: 100%; max-width: 1180px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
 .top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding-top: 16px; padding-bottom: 4px; }
-.brand { font-size: 22px; font-weight: 800; color: var(--text); text-decoration: none; }
+.brand { display: inline-flex; align-items: center; gap: 9px; font-size: 22px; font-weight: 800; color: var(--text); text-decoration: none; }
+.brand-icon { flex: none; width: 26px; height: 26px; }
 .brand:hover { color: var(--text); }
 #nav { display: flex; gap: 6px; flex-wrap: wrap; }
 main { flex: 1; padding-top: 12px; padding-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }

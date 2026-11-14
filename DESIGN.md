@@ -20,15 +20,15 @@ It was chosen from ten directions (A to J on the canvas). The other nine are kep
 | Muted text | `#B9C7D3` | Captions, units, axis labels |
 | Rule, strong | `#5B7186` | Table header rule |
 | Rule, soft | `#34495D` | Row rules |
-| Outline | `#7F93A5` | Unselected button border, raw data line, dashed "not proven" border |
-| Rising | `#8FC3FF` | A proven rising trend: figure, trend line, filled cell |
-| Falling | `#FFB866` | A proven falling trend: figure, trend line, filled cell |
+| Outline | `#7F93A5` | Unselected button border, raw data line, dashed border for no significant trend |
+| Rising | `#8FC3FF` | A significant rising trend: figure, trend line, filled cell |
+| Falling | `#FFB866` | A significant falling trend: figure, trend line, filled cell |
 
 Rules:
 - Blue and amber mean direction, never decoration. Do not use them for anything else.
 - Text on a blue or amber fill is `#142230`.
-- A trend that is not proven gets no colour: plain text, a dashed outline, a dashed grey trend line.
-- Direction is always also written in words ("rising, proven"), so colour is never the only signal.
+- A trend that is not statistically significant gets no colour: plain text, a dashed outline, a dashed grey trend line.
+- Direction is always also written in words ("rising", "falling"), so colour is never the only signal.
 
 ## Type
 
@@ -55,14 +55,14 @@ Numbers use `font-variant-numeric: tabular-nums`. Sentence case everywhere. No a
 ## Charts
 
 - Yearly values: thin line in the outline colour, 1.25–1.5px.
-- Trend: 3–3.5px line, blue if rising and proven, amber if falling and proven, dashed outline colour if not proven.
+- Trend: 3–3.5px line, blue if rising and significant, amber if falling and significant, dashed outline colour if not significant.
 - Stripes: one block per year, from amber (least) through `#2A3F54` (middle) to blue (most), scaled within each basin's own record.
 - Every chart has a text label for screen readers that says what it shows and which way it goes.
 
 ## Wording
 
-- A finding is a sentence: "Snow depth is rising by 0.20 cm per decade. Proven."
-- Verdict words: "proven" and "not proven". The test result is given as "p = 0.048" or "p below 0.001".
+- A finding is a sentence: "Snow depth is rising by 0.20 cm per decade (p = 0.048)."
+- The test result is given as "p = 0.048" or "p below 0.001".
 - No middle dots, arrows, or dash-joined labels.
 - Every number on screen comes from the calculation. Missing data is a bracketed placeholder such as `[CHU DATA NOT LOADED YET]`.
 - The limits stay on screen: past trend, not a forecast; model data; no glaciers in the model.

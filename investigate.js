@@ -9,14 +9,22 @@
   var CITIES = [['Bishkek', 42.87, 74.59], ['Osh', 40.53, 72.80], ['Karakol', 42.49, 78.39], ['Almaty', 43.24, 76.89], ['Tashkent', 41.31, 69.24], ['Dushanbe', 38.56, 68.79]];
   var MONTHLY = { SNODP: ['snowdepth', 'state'], PRECSNOLAND: ['snowfall', 'per_day'], PRECTOTCORR: ['precip', 'per_day'], T2M: ['temp', 'state'], FROST_DAYS: ['frost', 'state'], GWETROOT: ['soil', 'fraction'], EVLAND: ['evap', 'per_day'] };
   var QUESTIONS = [
-    { id: 'melt', label: 'Is the snow melting earlier?', key: 'melt', yes: 'down', vars: ['melt', 'snowdepth', 'frost'], calendar: true,
-      answers: { yes: 'Yes. The snow is melting earlier.', no: 'No. The snow is melting later.', open: 'No clear change. The record shows no reliable shift in the melt date.' } },
-    { id: 'water', label: 'Is less water arriving?', key: 'precip', yes: 'down', vars: ['precip', 'snowfall', 'evap', 'soil'],
-      answers: { yes: 'Yes. Less rain and snow is arriving.', no: 'No. More rain and snow is arriving.', open: 'No clear change. The record shows no reliable change in rain and snow.' } },
-    { id: 'warm', label: 'Is it getting warmer?', key: 'temp', yes: 'up', vars: ['temp', 'frost', 'summer'],
-      answers: { yes: 'Yes. It is getting warmer.', no: 'No. It is getting cooler.', open: 'No clear change. The record shows no reliable change in temperature.' } },
-    { id: 'season', label: 'Is the growing season changing?', key: 'frostfree', yes: 'up', vars: ['frostfree', 'lastfrost', 'summer'],
-      answers: { yes: 'Yes. The frost-free season is getting longer.', no: 'Yes, the other way. The frost-free season is getting shorter.', open: 'No clear change. The record shows no reliable change in the frost-free season.' } }
+    {
+      id: 'melt', label: 'Is the snow melting earlier?', key: 'melt', yes: 'down', vars: ['melt', 'snowdepth', 'frost'], calendar: true,
+      answers: { yes: 'Yes. The snow is melting earlier.', no: 'No. The snow is melting later.', open: 'No clear change. The record shows no reliable shift in the melt date.' }
+    },
+    {
+      id: 'water', label: 'Is less water arriving?', key: 'precip', yes: 'down', vars: ['precip', 'snowfall', 'evap', 'soil'],
+      answers: { yes: 'Yes. Less rain and snow is arriving.', no: 'No. More rain and snow is arriving.', open: 'No clear change. The record shows no reliable change in rain and snow.' }
+    },
+    {
+      id: 'warm', label: 'Is it getting warmer?', key: 'temp', yes: 'up', vars: ['temp', 'frost', 'summer'],
+      answers: { yes: 'Yes. It is getting warmer.', no: 'No. It is getting cooler.', open: 'No clear change. The record shows no reliable change in temperature.' }
+    },
+    {
+      id: 'season', label: 'Is the growing season changing?', key: 'frostfree', yes: 'up', vars: ['frostfree', 'lastfrost', 'summer'],
+      answers: { yes: 'Yes. The frost-free season is getting longer.', no: 'Yes, the other way. The frost-free season is getting shorter.', open: 'No clear change. The record shows no reliable change in the frost-free season.' }
+    }
   ];
   var DEMOS = [
     { label: 'Is the snow above Toktogul melting earlier?', where: { kind: 'basin', id: 'naryn' }, q: 'melt' },
@@ -166,8 +174,10 @@
       if (!any) throw new Error('NASA POWER has no values for this point');
       var clean = String(name || 'My place').replace(/[<>&"']/g, '').slice(0, 30) || 'My place';
       D.basins = D.basins.filter(function (b) { return b.id !== 'place'; });
-      D.basins.push({ id: 'place', name: clean, range: lat.toFixed(2) + '°, ' + lon.toFixed(2) + '°', feeds: 'this place', custom: true,
-        box: lon.toFixed(2) + ', ' + lat.toFixed(2), cells: 1, elevation: Math.round(docs[0].geometry.coordinates[2]) });
+      D.basins.push({
+        id: 'place', name: clean, range: lat.toFixed(2) + '°, ' + lon.toFixed(2) + '°', feeds: 'this place', custom: true,
+        box: lon.toFixed(2) + ', ' + lat.toFixed(2), cells: 1, elevation: Math.round(docs[0].geometry.coordinates[2])
+      });
       WA.D.basins = D.basins;
       D.series.long.place = out;
       delete DAILY.place;
@@ -235,7 +245,6 @@
       (head.detail ? '<p>' + head.detail + '</p>' : '') + '</div>' +
       '<div class="cards">' + cards + '</div>' +
       (q.calendar ? calendar(b.id) : '') +
-      askBox(b) +
       '<p class="caption">' + (b.custom ? '' : '<a href="' + WA.link('statement', { record: 'long', from: 0, basin: b.id }) + '">What this means for a water engineer, a dam dispatcher or a negotiator</a>. ') +
       '<a href="' + WA.link('trend', { record: 'long', from: 0, basin: b.id, variable: q.key, month: 'year' }) + '">Every variable for ' + b.name + '</a>. ' +
       'Past record, not a forecast; no glaciers in the data. <a href="' + WA.link('method') + '">Limits</a>.</p></section>';

@@ -656,7 +656,7 @@
     });
     var conflicts = D.basins.map(function (b) { return snowConflict(b.id); }).filter(Boolean);
     return '<div class="prose wide"><h1 class="title">Method and data</h1>' +
-      '<p>Every figure in this tool is calculated in your browser from the files listed here. Nothing is typed in by hand. The sentences, including the answers in the question box, come from fixed templates and rules. No AI writes anything while you use the tool.</p>' +
+      '<p>Every figure in this tool is calculated in your browser from the files listed here. Nothing is typed in by hand. The sentences come from fixed templates and rules. No AI writes anything while you use the tool.</p>' +
       '<h2>How a trend is tested</h2><ol>' +
       '<li>Take monthly values for the basin: the mean of every NASA grid cell inside the basin box.</li>' +
       '<li>Remove the seasonal cycle by comparing like with like: whole years with whole years, or one month with the same month in other years. A year counts only if all twelve months are present.</li>' +
