@@ -224,21 +224,21 @@
         '<p class="card-figure"><strong class="' + (st.cls === 'none' ? '' : st.cls) + '">' + WA.num(st.perDecade, true) + ' ' + v.unit + '</strong> per decade, ' + WA.words(st, v) + '</p>' +
         WA.chart(r.series, st, label) +
         '<div class="axis"><span>' + st.first + '</span><span>Average ' + WA.val(v, st.mean) + ', ' + WA.pText(st.p) + '</span><span>' + st.last + '</span></div>' +
-        '<p>' + WA.finding(v, 'year', st) + '</p>' +
         cautions(b, v, r).map(function (c) { return '<p class="warn">' + c + '</p>'; }).join('') +
         (proj ? '<p class="caption">' + proj + '</p>' : '') +
-        '<a class="btn" href="' + WA.link('trend', { record: 'long', from: 0, basin: b.id, variable: id, month: 'year' }) + '">Open the full record</a></section>';
+        (WA.EXTRA.futureCard ? WA.EXTRA.futureCard(b, v) : '') +
+        '<a class="more" href="' + WA.link('trend', { record: 'long', from: 0, basin: b.id, variable: id, month: 'year' }) + '">Full record</a></section>';
     }).join('');
     return '<section class="case" aria-label="Case file">' +
       '<div class="head"><h2 class="title">Case file: ' + b.name + '</h2><span class="caption">' + b.range + (b.elevation ? ', about ' + b.elevation + ' m' : '') + ', NASA record from 1981</span></div>' +
       '<div class="panel verdict"><p class="caption">' + q.label + '</p><p class="verdict-text ' + (head.cls === 'none' ? '' : head.cls) + '">' + head.text + '</p>' +
       (head.detail ? '<p>' + head.detail + '</p>' : '') + '</div>' +
-      '<h3 class="panel-title">The evidence</h3><div class="cards">' + cards + '</div>' +
+      '<div class="cards">' + cards + '</div>' +
       (q.calendar ? calendar(b.id) : '') +
       askBox(b) +
-      '<div class="btn-row">' + (b.custom ? '' : '<a class="btn" href="' + WA.link('statement', { record: 'long', from: 0, basin: b.id }) + '">What it means for your role</a>') +
-      '<a class="btn" href="' + WA.link('trend', { record: 'long', from: 0, basin: b.id, variable: q.key, month: 'year' }) + '">Explore every variable for ' + b.name + '</a></div>' +
-      '<p class="caption">Past record, not a forecast. Model and reanalysis data: no glaciers, grid cells of about 50 km. See Method and data for the limits.</p></section>';
+      '<p class="caption">' + (b.custom ? '' : '<a href="' + WA.link('statement', { record: 'long', from: 0, basin: b.id }) + '">What this means for a water engineer, a dam dispatcher or a negotiator</a>. ') +
+      '<a href="' + WA.link('trend', { record: 'long', from: 0, basin: b.id, variable: q.key, month: 'year' }) + '">Every variable for ' + b.name + '</a>. ' +
+      'Past record, not a forecast; no glaciers in the data. <a href="' + WA.link('method') + '">Limits</a>.</p></section>';
   }
 
   /* ---------- questions in plain words ---------- */
@@ -380,39 +380,34 @@
   function pressed(on) { return on ? 'true' : 'false'; }
   function pageInvestigate() {
     var w = inv.where;
-    return '<div class="head"><h1 class="title">Investigate your water</h1></div>' +
-      '<p class="lead">Pick a place and a question. The tool pulls 45 years of NASA records for that place, tests whether the change is real, and gives you the answer with the evidence.</p>' +
-      '<div class="btn-row" role="group" aria-label="Examples"><span class="caption">Try an example:</span>' + DEMOS.map(function (d, i) {
-        return '<button type="button" class="btn" data-inv="demo" data-value="' + i + '">' + d.label + '</button>';
-      }).join('') + '</div>' +
-      '<div class="steps"><section class="panel"><h2 class="panel-title">1. Where?</h2>' +
-      '<p class="caption">A river basin (works offline), a city, or any point: click the map or type coordinates.</p>' +
+    return '<div class="head"><h1 class="title">Is your water changing?</h1></div>' +
+      '<p class="lead">Pick a place and a question. The tool tests 45 years of NASA records and answers.</p>' +
+      '<div class="steps"><section class="panel"><h2 class="panel-title">Where?</h2>' +
       '<div class="btn-row" role="group" aria-label="Basin">' + D.basins.filter(function (b) { return !b.custom; }).map(function (b) {
-        return '<button type="button" class="btn" data-inv="basin" data-value="' + b.id + '" aria-pressed="' + pressed(w.kind === 'basin' && w.id === b.id) + '">' + b.name + ' basin</button>';
+        return '<button type="button" class="btn" data-inv="basin" data-value="' + b.id + '" aria-pressed="' + pressed(w.kind === 'basin' && w.id === b.id) + '">' + b.name + '</button>';
       }).join('') + '</div>' +
-      '<div class="btn-row" role="group" aria-label="City">' + CITIES.map(function (c, i) {
-        return '<button type="button" class="btn" data-inv="city" data-value="' + i + '" aria-pressed="' + pressed(w.kind === 'point' && w.name === c[0]) + '">' + c[0] + '</button>';
-      }).join('') + '</div>' +
-      '<div id="map" aria-label="Map. Click to choose a point."></div>' +
-      '<form class="place-form" data-form="point">' +
+      '<div id="map" aria-label="Map. Select a basin, a city or any point."></div>' +
+      '<p class="caption" id="inv-where">' + whereText() + '</p>' +
+      '<details' + (w.kind === 'point' && !w.fromMap ? ' open' : '') + '><summary>Type coordinates</summary><form class="place-form" data-form="point">' +
       '<label class="field">Name <input type="text" name="name" maxlength="30" autocomplete="off" value="' + (w.kind === 'point' ? w.name : 'My place') + '"></label>' +
       '<label class="field">Latitude <input type="number" name="lat" step="0.01" min="-90" max="90" value="' + (w.kind === 'point' ? w.lat : '') + '"></label>' +
       '<label class="field">Longitude <input type="number" name="lon" step="0.01" min="-180" max="180" value="' + (w.kind === 'point' ? w.lon : '') + '"></label>' +
-      '<button type="submit" class="btn">Use this point</button></form></section>' +
-      '<section class="panel"><h2 class="panel-title">2. What do you want to know?</h2>' +
+      '<button type="submit" class="btn">Use this point</button></form></details></section>' +
+      '<section class="panel"><h2 class="panel-title">What do you want to know?</h2>' +
       '<div class="btn-col" role="group" aria-label="Question">' + QUESTIONS.map(function (q) {
         return '<button type="button" class="btn" data-inv="q" data-value="' + q.id + '" aria-pressed="' + pressed(inv.q === q.id) + '">' + q.label + '</button>';
       }).join('') + '</div>' +
-      '<h2 class="panel-title" style="margin-top:14px">3. Run the test</h2>' +
-      '<p class="caption" id="inv-where">' + whereText() + '</p>' +
       '<button type="button" class="btn go" data-inv="go"' + (inv.busy ? ' disabled' : '') + '>Investigate</button>' +
-      '<p id="inv-status" role="status" class="' + (inv.status.charAt(0) === '[' ? 'warn' : 'caption') + '">' + inv.status + '</p></section></div>' +
+      '<p id="inv-status" role="status" class="' + (inv.status.charAt(0) === '[' ? 'warn' : 'caption') + '">' + inv.status + '</p>' +
+      '<p class="caption">Or watch an example:</p><ul class="examples">' + DEMOS.map(function (d, i) {
+        return '<li><button type="button" class="link" data-inv="demo" data-value="' + i + '">' + d.label + '</button></li>';
+      }).join('') + '</ul></section></div>' +
       '<div id="case">' + (inv.caseOf ? caseFile() : '') + '</div>';
   }
   function whereText() {
     var w = inv.where;
-    if (w.kind === 'basin') return 'Place: the ' + WA.basin(w.id).name + ' basin, ' + WA.basin(w.id).range + '. Data is built in, so this works without internet.';
-    return 'Place: ' + w.name + ', ' + (+w.lat).toFixed(2) + '°, ' + (+w.lon).toFixed(2) + '°. Data is fetched live from NASA, which needs internet and takes a few seconds.';
+    if (w.kind === 'basin') return 'Chosen: the ' + WA.basin(w.id).name + ' basin, ' + WA.basin(w.id).range + '. Or select a city or any point on the map.';
+    return 'Chosen: ' + w.name + ', ' + (+w.lat).toFixed(2) + '°, ' + (+w.lon).toFixed(2) + '°. Its record is fetched live from NASA.';
   }
   function setStatus(text) {
     inv.status = text;
@@ -440,7 +435,7 @@
     if (el && el.scrollIntoView) el.scrollIntoView({ block: 'start' });
   }
   function choosePoint(name, lat, lon, redraw) {
-    inv.where = { kind: 'point', name: name, lat: lat, lon: lon };
+    inv.where = { kind: 'point', name: name, lat: lat, lon: lon, fromMap: !redraw };
     inv.caseOf = null; // the old case file belongs to another place
     if (redraw) { WA.render(); return; }
     var old = document.getElementById('case');
@@ -448,7 +443,7 @@
     // A map click: update the form in place so the map does not reload.
     var form = document.querySelector('form[data-form="point"]');
     if (form) { form.elements.lat.value = lat.toFixed(2); form.elements.lon.value = lon.toFixed(2); form.elements.name.value = name; }
-    Array.prototype.forEach.call(document.querySelectorAll('[data-inv="basin"],[data-inv="city"]'), function (b) { b.setAttribute('aria-pressed', 'false'); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-inv="basin"]'), function (b) { b.setAttribute('aria-pressed', 'false'); });
     var where = document.getElementById('inv-where');
     if (where) where.textContent = whereText();
     placeMarker();

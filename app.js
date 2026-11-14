@@ -11,13 +11,14 @@
   ];
   var PAGES = [
     { id: '', label: 'Investigate' },
-    { id: 'overview', label: 'All basins' },
-    { id: 'trend', label: 'Trend' },
-    { id: 'statement', label: 'Statement' },
-    { id: 'compare', label: 'Compare' },
-    { id: 'method', label: 'Method and data' },
-    { id: 'about', label: 'About' }
+    { id: 'overview', label: 'Explore data', tab: 'All basins' },
+    { id: 'trend', label: 'Trend', tab: 'One place', hidden: true },
+    { id: 'compare', label: 'Compare', tab: 'Compare basins', hidden: true },
+    { id: 'statement', label: 'Statement', tab: 'What it means', hidden: true },
+    { id: 'method', label: 'Method' },
+    { id: 'about', label: 'About', hidden: true }
   ];
+  var EXPLORE = ['overview', 'trend', 'compare', 'statement'];
   var SHORT_RECORD = 20; // years; below this a record is called short
   var SNOW = { swe: 'snowdepth', snowdepth: 'swe' }; // the snow variable of the other record
   var state = { page: '', record: 'long', from: 0, basin: 'naryn', variable: 'snowdepth', month: 'year', role: 'dispatcher', cmp: 'frost' };
@@ -160,6 +161,7 @@
     });
     return { years: years, values: values };
   }
+  var controlsOpen = false; // the data chooser stays open while it is being used
   var cache = {};
   function compute(recId, bId, vId, month, from) {
     var key = [recId, bId, vId, month, from].join('|');
@@ -337,8 +339,7 @@
     var st = r.stat;
     if (!st || !st.proven || r.step || (SNOW[v.id] && snowConflict(b.id))) return '';
     var target = st.last + 10, now = st.icpt + st.slope * (st.last - st.first), then = st.icpt + st.slope * (target - st.first);
-    return 'If the same pace held, the line would go from ' + val(v, now) + ' in ' + st.last + ' to ' + val(v, then) + ' in ' + target +
-      '. This only extends the past line; it is not a forecast, and nature does not have to follow it.';
+    return 'At this pace: ' + val(v, then) + ' by ' + target + ' (' + val(v, now) + ' in ' + st.last + '). The past line extended, not a forecast.';
   }
   // Plain definitions of every variable.
   var DEFINE = {
@@ -408,16 +409,16 @@
   }
   // Which record, and which years. Fixed windows only, so nobody can hunt for a year that makes a trend "proven".
   function recordControls() {
-    var r = record();
+    var r = record(), from = state.from || r.windows[0];
     var out = '<div class="btn-row" role="group" aria-label="Record">' + D.records.map(function (x) {
       return button('record', x.id, x.label, x.id === r.id);
     }).join('') + '</div>';
     if (r.windows.length > 1) {
       out += '<div class="btn-row" role="group" aria-label="Years">' + r.windows.map(function (w, i) {
-        return button('from', i === 0 ? 0 : w, 'Since ' + w, (state.from || r.windows[0]) === w);
+        return button('from', i === 0 ? 0 : w, 'Since ' + w, from === w);
       }).join('') + '</div>';
     }
-    return '<div class="controls">' + out + '</div>';
+    return '<details class="controls"' + (controlsOpen ? ' open' : '') + '><summary>Data: ' + r.label.toLowerCase() + (r.windows.length > 1 ? ', years since ' + from : '') + '. Change</summary>' + out + '</details>';
   }
   function recordText(st) { return st ? st.first + ' to ' + st.last : 'no record'; }
 
@@ -449,28 +450,16 @@
       return '<li><span class="mark ' + (p.up.length && p.down.length ? 'none' : p.up.length ? 'up' : 'down') + '" aria-hidden="true"></span><span><strong>' + v.label + '</strong> ' +
         (v.plural ? 'are ' : 'is ') + parts.join(' and ') + '.</span></li>';
     }).join('');
-    return '<div class="head"><h1 class="title">How is the mountain water changing, and is it proven?</h1></div>' +
-      '<p class="lead">Snow in the Tien Shan and the Pamir becomes winter electricity upstream and summer irrigation downstream. ' +
-      'This board reads open NASA data for each river basin and answers four questions.</p>' +
-      '<ul class="questions">' +
-      '<li><strong>What is changing?</strong>Snow, rain, temperature, frost, and the dates the snow melts and the frost ends.</li>' +
-      '<li><strong>Where?</strong>Basin by basin, because trends are not the same everywhere.</li>' +
-      '<li><strong>By how much?</strong>Change per decade, in the unit of the variable.</li>' +
-      '<li><strong>Is it proven?</strong>A Mann-Kendall test decides. If it fails, we say so.</li></ul>' +
-      recordControls() +
-      '<div class="head"><h2 class="panel-title">Every basin, every variable</h2>' +
+    return recordControls() +
+      '<div class="head"><h1 class="title">Every basin, every variable</h1>' +
       '<span class="caption">Change per decade in whole-year values, ' + windowText() + '</span></div>' +
       '<div class="matrix-wrap"><table class="matrix cols-' + vars.length + '"><thead><tr><th scope="col">Basin</th>' +
       vars.map(function (v) { return '<th scope="col">' + v.label + '</th>'; }).join('') +
       '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
       '<h2 class="panel-title">Proven in these years, ' + windowText() + '</h2>' +
       (lines ? '<ul class="findings">' + lines + '</ul>' : '<p class="lead">No change is proven in these years.</p>') +
-      '<p class="caption">Filled cells are proven changes (p below 0.05); a dashed cell is not proven. Rain, snowfall, evaporation and frost days are yearly totals; snow depth, temperature and soil wetness are yearly averages; the melt and frost dates are one date a year, with the change given in days. ' +
-      'A proven change marked "one step" or "sources disagree" should not be quoted as a steady trend. ' +
-      'Snow depth, snowfall, rain, soil wetness and evaporation in the long record all depend on the same rain and snow input, so several proven cells in one row are closer to one finding than to several. Select a cell to open its record.</p>' +
-      '<div class="btn-row"><a class="btn" href="' + link('trend') + '">Open the trend board</a>' +
-      '<a class="btn" href="' + link('statement') + '">Read the statement for your role</a>' +
-      '<a class="btn" href="' + link('') + '">Investigate a place</a></div>';
+      '<p class="caption">Filled cells are proven changes; a dashed cell is not proven. ' +
+      'A proven change marked "one step" or "sources disagree" should not be quoted as a steady trend. Select a cell to open its record.</p>';
   }
 
   function normsPanel(v, series) {
@@ -672,6 +661,7 @@
       '<li><strong>Summer days.</strong> Days with a maximum of 25 °C or more.</li></ul>' +
       '<p>These use daily snow depth and temperature from NASA POWER (MERRA-2), averaged over the basin\'s grid cells, from 1981 to this month. The snow depth is modelled, not seen by satellite, and it is one source: no second product has checked the melt dates yet. The definitions are ours and are written for the northern hemisphere.</p>' +
       '<h2>Projections</h2><p>The tool does not forecast. Where it shows a year after the record ends, on the map over time or in a case file, it extends the fitted Theil-Sen line of a change that is proven and is not a single step. Places with no proven trend get no projection. No AI or machine-learning model produces these numbers: with one value a year there are too few data points to train one honestly.</p>' +
+      (EXTRA.methodExtra ? EXTRA.methodExtra() : '') +
       '<h2>Two records</h2><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Record</th><th scope="col">What it is</th><th scope="col">Variables</th><th scope="col">Basins</th></tr></thead><tbody>' + recRows + '</tbody></table></div>' +
       '<p>Snowfall, rain and temperature in both records come from the same MERRA-2 reanalysis, so they are not two independent sources. The one independent comparison is snow: GLDAS snow water against MERRA-2 snow depth.</p>' +
       conflicts.map(function (c) { return '<p class="warn">' + c + '</p>'; }).join('') +
@@ -768,9 +758,14 @@
   }
   function render(keepFocus) {
     var main = document.getElementById('main');
-    main.innerHTML = RENDER[state.page]();
-    document.getElementById('nav').innerHTML = PAGES.map(function (p) {
-      return '<a class="btn" href="' + link(p.id) + '"' + (p.id === state.page ? ' aria-current="page"' : '') + '>' + p.label + '</a>';
+    var explore = EXPLORE.indexOf(state.page) >= 0;
+    var tabs = !explore ? '' : '<nav class="tabs" aria-label="Explore data">' + EXPLORE.map(function (id) {
+      return '<a href="' + link(id) + '"' + (id === state.page ? ' aria-current="page"' : '') + '>' + byId(PAGES, id).tab + '</a>';
+    }).join('') + '</nav>';
+    main.innerHTML = tabs + RENDER[state.page]();
+    document.getElementById('nav').innerHTML = PAGES.filter(function (p) { return !p.hidden; }).map(function (p) {
+      var current = p.id === state.page || (p.id === 'overview' && explore);
+      return '<a class="btn" href="' + link(p.id) + '"' + (current ? ' aria-current="page"' : '') + '>' + p.label + '</a>';
     }).join('');
     document.title = (state.page ? byId(PAGES, state.page).label + ', ' : '') + 'Tien Shan Water Account';
     if (EXTRA.afterRender) EXTRA.afterRender(state.page);
@@ -780,6 +775,7 @@
     }
   }
   function set(key, value) {
+    controlsOpen = key === 'record' || key === 'from';
     state[key] = key === 'from' ? +value : value;
     normalise();
     try { history.replaceState(null, '', hashFor()); } catch (e) { /* some browsers refuse this on file pages; the page still works */ }
