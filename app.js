@@ -224,26 +224,26 @@
       ? ' It could be measured in only ' + st.n + ' years between ' + st.first + ' and ' + st.last + '.'
       : ' The record is only ' + st.n + ' years (' + st.first + ' to ' + st.last + ').';
     if (v.date && st.proven) {
-      return 'The ' + s.toLowerCase() + ' is moving ' + dirWord(v, st.slope > 0) + ' by <strong>' + num(Math.abs(st.perDecade)) + ' days</strong> per decade. Proven (' + pText(st.p) + '). The average is ' + dayName(st.mean) + '.' + tail;
+      return 'The ' + s.toLowerCase() + ' is moving ' + dirWord(v, st.slope > 0) + ' by <strong>' + num(Math.abs(st.perDecade)) + ' days</strong> per decade (' + pText(st.p) + '). The average is ' + dayName(st.mean) + '.' + tail;
     }
     if (!st.proven) {
-      return s + (v.plural ? ' show' : ' shows') + ' no proven change (' + num(st.perDecade, true) + ' ' + v.unit + ' per decade, ' + pText(st.p) + ').' + tail;
+      return s + (v.plural ? ' show' : ' shows') + ' no significant change (' + num(st.perDecade, true) + ' ' + v.unit + ' per decade, ' + pText(st.p) + ').' + tail;
     }
     return s + (v.plural ? ' are ' : ' is ') + (st.slope > 0 ? 'rising' : 'falling') + ' by <strong>' + num(Math.abs(st.perDecade)) + ' ' + v.unit +
-      '</strong> per decade. Proven (' + pText(st.p) + ').' + tail;
+      '</strong> per decade (' + pText(st.p) + ').' + tail;
   }
-  // What one proven or unproven change means for one role. Text only; the numbers stay in the finding.
+  // What one change means for one role. Text only; the numbers stay in the finding.
   function reading(roleId, b, v, st) {
     var what = v.long, dir = st && st.proven ? (st.slope > 0 ? 'up' : 'down') : 'none', snow = v.id === 'swe' || v.id === 'snowdepth';
     if (roleId === 'negotiator') {
-      if (dir === 'none') return 'A change in ' + what + ' is not proven for the ' + b.name + ' basin. Neither side can use this record to claim a trend.';
+      if (dir === 'none') return 'No significant change in ' + what + ' for the ' + b.name + ' basin. Neither side can use this record to claim a trend.';
       return 'In the ' + b.name + ' basin, ' + what + ' is ' + (v.date ? 'moving ' + dirWord(v, dir === 'up') : dir === 'up' ? 'rising' : 'falling') +
         ', and the test confirms it. Every side can check this figure against the same open NASA data.';
     }
     if (dir === 'none') {
       return roleId === 'engineer'
-        ? 'This record does not prove a change in ' + what + '. Keep using the long-term average, and check again when more years are loaded.'
-        : 'No proven change in ' + what + '. This record gives no reason to change the drawdown rule.';
+        ? 'This record does not show a significant change in ' + what + '. Keep using the long-term average, and check again when more years are loaded.'
+        : 'No significant change in ' + what + '. This record gives no reason to change the drawdown rule.';
     }
     if (v.id === 'melt') {
       return dir === 'down'
@@ -462,10 +462,10 @@
       '<div class="matrix-wrap"><table class="matrix cols-' + vars.length + '"><thead><tr><th scope="col">Basin</th>' +
       vars.map(function (v) { return '<th scope="col">' + v.label + '</th>'; }).join('') +
       '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
-      '<h2 class="panel-title">Proven in these years, ' + windowText() + '</h2>' +
-      (lines ? '<ul class="findings">' + lines + '</ul>' : '<p class="lead">No change is proven in these years.</p>') +
-      '<p class="caption">Filled cells are proven changes; a dashed cell is not proven. ' +
-      'A proven change marked "one step" or "sources disagree" should not be quoted as a steady trend. Select a cell to open its record.</p>';
+      '<h2 class="panel-title">Changes in these years, ' + windowText() + '</h2>' +
+      (lines ? '<ul class="findings">' + lines + '</ul>' : '<p class="lead">No significant change in these years.</p>') +
+      '<p class="caption">Filled cells show statistically significant changes; a dashed cell indicates no significant change. ' +
+      'A change marked "one step" or "sources disagree" should not be quoted as a steady trend. Select a cell to open its record.</p>';
   }
 
   function normsPanel(v, series) {
@@ -477,7 +477,7 @@
       '<div class="panel"><h2 class="caption">Old average, ' + ys[0] + ' to ' + ys[half - 1] + '</h2><span class="figure">' + val(v, w.oldMean) + '</span></div>' +
       '<div class="panel"><h2 class="caption">New average, ' + ys[half] + ' to ' + ys[n - 1] + '</h2><span class="figure' + cls + '">' + val(v, w.newMean) + '</span></div>' +
       '<div class="panel"><h2 class="caption">Has the average itself moved?</h2><p>The new average is ' + num(Math.abs(w.diff)) + ' ' + v.unit +
-      (v.date ? (w.diff > 0 ? ' later' : ' earlier') : (w.diff > 0 ? ' higher' : ' lower')) + '. ' + (w.proven ? 'Proven' : 'Not proven') + ' by a t-test (' + pText(w.p) + ').</p></div></section>';
+      (v.date ? (w.diff > 0 ? ' later' : ' earlier') : (w.diff > 0 ? ' higher' : ' lower')) + ' (t-test ' + pText(w.p) + ').</p></div></section>';
   }
 
   function pageTrend() {
@@ -500,7 +500,7 @@
     } else {
       var share = v.id !== 'temp' && v.id !== 'soil' && !v.fixed && st.mean > 0 ? ', a change of ' + Math.round(Math.abs(st.perDecade / st.mean * 100)) + '% of it each decade' : '';
       var label = b.name + ' ' + subject(v, state.month).toLowerCase() + ', ' + st.first + ' to ' + st.last + ', ' +
-        (st.proven ? 'with a ' + (st.slope > 0 ? 'rising' : 'falling') + ' trend line' : 'with a trend line that is not proven');
+        (st.proven ? 'with a ' + (st.slope > 0 ? 'rising' : 'falling') + ' trend line' : 'with no statistically significant trend line');
       var src = source(state.record, b.id, v.id), conflict = SNOW[v.id] && state.month === 'year' ? snowConflict(b.id) : '', w = words(st, v);
       main = '<section class="panel board-main">' +
         '<h1 class="panel-title">' + subject(v, state.month) + '</h1>' +
@@ -552,8 +552,8 @@
     });
     if (unproven.length) {
       lines.push(ro.id === 'negotiator'
-        ? 'Not proven: ' + listWords(unproven) + '. Neither side can use this record to claim a trend there.'
-        : 'Not proven: ' + listWords(unproven) + '. This record gives no reason to change plans on those.');
+        ? 'No significant change: ' + listWords(unproven) + '. Neither side can use this record to claim a trend there.'
+        : 'No significant change: ' + listWords(unproven) + '. This record gives no reason to change plans on those.');
     }
     var aside;
     if (b.custom) {
@@ -588,7 +588,7 @@
         cells += '<i style="background:' + stripeColour(hi === lo ? 0.5 : (r.series.values[k] - lo) / (hi - lo)) + '" title="' + y + ': ' + val(v, r.series.values[k]) + '"></i>';
       }
       var label = b.name + ' ' + subject(v, 'year').toLowerCase() + ' by year, ' + r.series.years[0] + ' to ' + r.series.years[r.series.years.length - 1] + '. ' +
-        (st && st.proven ? (st.slope > 0 ? 'Blue stripes, meaning more, become more common towards the end.' : 'Amber stripes, meaning less, become more common towards the end.') : 'No proven direction.');
+        (st && st.proven ? (st.slope > 0 ? 'Blue stripes, meaning more, become more common towards the end.' : 'Amber stripes, meaning less, become more common towards the end.') : 'No clear direction.');
       var w = words(st, v);
       return '<div class="band-head"><h2 class="panel-title">' + b.name + ', ' + b.range + '</h2>' +
         '<span><strong class="' + (st && st.cls !== 'none' ? st.cls : '') + '">' + (st ? num(st.perDecade, true) + ' ' + v.unit : '') + '</strong> per decade' +
@@ -600,11 +600,11 @@
     basins.forEach(function (b, i) { (all[i].stat && all[i].stat.cls === 'up' ? up : all[i].stat && all[i].stat.cls === 'down' ? down : none).push(b.name); });
     var verdict;
     var moveWord = v.date ? (up.length ? 'shift later' : 'shift earlier') : (up.length ? 'rise' : 'fall');
-    if (up.length && down.length) verdict = 'The basins are moving in opposite directions: ' + v.long + ' is ' + (v.date ? 'moving later' : 'rising') + ' in ' + listWords(up) + ' and ' + (v.date ? 'earlier' : 'falling') + ' in ' + listWords(down) + ', and each change is proven.';
-    else if (!up.length && !down.length) verdict = 'No basin shows a proven change in ' + v.long + '.';
-    else if (!none.length) verdict = 'Every basin shows a proven ' + moveWord + ' in ' + v.long + '.';
-    else verdict = 'The ' + moveWord + ' in ' + v.long + ' is proven in ' + listWords(up.concat(down)) + ' and not proven in ' + listWords(none) +
-      '. Not proven does not mean no change: it means this record cannot show one.';
+    if (up.length && down.length) verdict = 'The basins are moving in opposite directions: ' + v.long + ' is ' + (v.date ? 'moving later' : 'rising') + ' in ' + listWords(up) + ' and ' + (v.date ? 'earlier' : 'falling') + ' in ' + listWords(down) + ', and each change is statistically significant.';
+    else if (!up.length && !down.length) verdict = 'No basin shows a significant change in ' + v.long + '.';
+    else if (!none.length) verdict = 'Every basin shows a significant ' + moveWord + ' in ' + v.long + '.';
+    else verdict = 'The ' + moveWord + ' in ' + v.long + ' is statistically significant in ' + listWords(up.concat(down)) + ' and not significant in ' + listWords(none) +
+      '. A lack of statistical significance does not mean no change: it means this record cannot show one.';
     var mid = Math.round((y0 + y1) / 2);
     return recordControls() +
       '<div class="head"><h1 class="title">' + subject(v, 'year') + ', one stripe a year</h1><span class="caption">' + y0 + ' to ' + y1 + '</span></div>' +
@@ -661,8 +661,8 @@
       '<li>Take monthly values for the basin: the mean of every NASA grid cell inside the basin box.</li>' +
       '<li>Remove the seasonal cycle by comparing like with like: whole years with whole years, or one month with the same month in other years. A year counts only if all twelve months are present.</li>' +
       '<li>Measure the rate of change with the Theil-Sen slope, the median of the slopes between every pair of years. One extreme year cannot bend it.</li>' +
-      '<li>Test it with the Mann-Kendall test. If p is below 0.05 the change is called proven. Otherwise it is called not proven.</li>' +
-      '<li>Check whether a proven change is really one step: if a single jump fits the years at least 20% better than a straight line, the tool says so.</li>' +
+      '<li>Test it with the Mann-Kendall test. If p is below 0.05 the change is called statistically significant.</li>' +
+      '<li>Check whether a significant change is really one step: if a single jump fits the years at least 20% better than a straight line, the tool says so.</li>' +
       '<li>Compare the first half of the record with the second half using Welch\'s t-test, to see whether the average itself has moved.</li></ol>' +
       '<h2>Dates built from daily data</h2><ul>' +
       '<li><strong>Snow half-melt date.</strong> For each year, find the deepest snow between 1 October of the year before and 30 June. The half-melt date is the first day after that peak when the snow depth is below half of it. Years with a peak under 1 cm are left out.</li>' +
@@ -670,7 +670,7 @@
       '<li><strong>Frost-free season.</strong> The days between the last spring frost and the first frost after 31 July.</li>' +
       '<li><strong>Summer days.</strong> Days with a maximum of 25 °C or more.</li></ul>' +
       '<p>These use daily snow depth and temperature from NASA POWER (MERRA-2), averaged over the basin\'s grid cells, from 1981 to this month. The snow depth is modelled, not seen by satellite, and it is one source: no second product has checked the melt dates yet. The definitions are ours and are written for the northern hemisphere.</p>' +
-      '<h2>Projections</h2><p>The tool does not forecast. Where it shows a year after the record ends, on the map over time or in a case file, it extends the fitted Theil-Sen line of a change that is proven and is not a single step. Places with no proven trend get no projection. No AI or machine-learning model produces these numbers: with one value a year there are too few data points to train one honestly.</p>' +
+      '<h2>Projections</h2><p>The tool does not forecast. Where it shows a year after the record ends, on the map over time or in a case file, it extends the fitted Theil-Sen line of a change that is statistically significant and is not a single step. Places with no significant trend get no projection. No AI or machine-learning model produces these numbers: with one value a year there are too few data points to train one honestly.</p>' +
       (EXTRA.methodExtra ? EXTRA.methodExtra() : '') +
       '<h2>Two records</h2><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Record</th><th scope="col">What it is</th><th scope="col">Variables</th><th scope="col">Basins</th></tr></thead><tbody>' + recRows + '</tbody></table></div>' +
       '<p>Snowfall, rain and temperature in both records come from the same MERRA-2 reanalysis, so they are not two independent sources. The one independent comparison is snow: GLDAS snow water against MERRA-2 snow depth.</p>' +
@@ -682,10 +682,10 @@
       '<p>The same test on the long record, for two fixed windows. The tool offers only these windows, so nobody can search for a start year that makes a trend pass.</p>' +
       '<div class="table-wrap"><table class="table"><thead><tr><th scope="col">Basin</th><th scope="col">Variable</th>' +
       long.windows.map(function (w) { return '<th scope="col">Since ' + w + ', per decade</th>'; }).join('') + '</tr></thead><tbody>' + winRows + '</tbody></table></div>' +
-      '<p>Of ' + total + ' basin and variable pairs, ' + lost + ' are proven over the long window but not over the short one: with fewer years the test has less to work with. ' +
-      gained + ' are proven only since ' + long.windows[long.windows.length - 1] + ', and ' + gainedStep + ' of those are flagged as one step. A trend always belongs to its years: state the window whenever you quote one.</p>' +
-      (robust.length ? '<p><strong>Proven in both windows, in the same direction, with no caution:</strong> ' + listWords(robust) + '. These are the findings to rely on.</p>' : '<p>No change is proven in both windows without a caution.</p>') +
-      (shaky.length ? '<p>Proven in both windows but carrying a caution: ' + listWords(shaky) + '.</p>' : '') +
+      '<p>Of ' + total + ' basin and variable pairs, ' + lost + ' are significant over the long window but not over the short one: with fewer years the test has less to work with. ' +
+      gained + ' are significant only since ' + long.windows[long.windows.length - 1] + ', and ' + gainedStep + ' of those are flagged as one step. A trend always belongs to its years: state the window whenever you quote one.</p>' +
+      (robust.length ? '<p><strong>Significant in both windows, in the same direction, with no caution:</strong> ' + listWords(robust) + '. These are the findings to rely on.</p>' : '<p>No change is significant in both windows without a caution.</p>') +
+      (shaky.length ? '<p>Significant in both windows but carrying a caution: ' + listWords(shaky) + '.</p>' : '') +
       '<h2>Limits you should know</h2><ul>' +
       '<li>A past trend is not a forecast.</li>' +
       '<li>MERRA-2 and GLDAS are models. They estimate snow from weather; nobody measured it on the ground. Absolute amounts in high mountains are uncertain, so read the direction and the test, not the millimetres.</li>' +
@@ -700,7 +700,7 @@
       '<li>MODIS satellite snow cover, which would check the modelled melt dates against what a satellite saw. The request needs a NASA Earthdata login and was not ready in time.</li>' +
       '<li>Glaciers. Nothing here measures glacier ice.</li>' +
       '<li>GRACE total water storage.</li></ul>' +
-      '<h2>Related tools</h2><p>MODSNOW and SnowMapper Central Asia show how much snow there is now. This tool asks a different question: whether the long-term level is moving, and whether that is proven.</p></div>';
+      '<h2>Related tools</h2><p>MODSNOW and SnowMapper Central Asia show how much snow there is now. This tool asks a different question: whether the long-term level is moving, and whether that change is statistically significant.</p></div>';
   }
 
   function pageAbout() {

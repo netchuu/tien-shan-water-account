@@ -54,7 +54,7 @@
   function pageMap() {
     var v = WA.variable(m.v);
     return '<div class="head"><h1 class="title">The map over time</h1><span class="caption">One square is one NASA grid cell of about 50 km</span></div>' +
-      '<p class="lead">Move the slider to watch each year since ' + FIRST + '. Past ' + LAST + ' the map shows a projection: each cell\'s proven trend line, extended.</p>' +
+      '<p class="lead">Move the slider to watch each year since ' + FIRST + '. Past ' + LAST + ' the map shows a projection: each cell\'s past trend line, extended.</p>' +
       '<div class="btn-row" role="group" aria-label="Variable">' + VARS.map(function (id) {
         return '<button type="button" class="btn" data-map="var" data-value="' + id + '" aria-pressed="' + (id === m.v) + '">' + WA.variable(id).label + '</button>';
       }).join('') + '</div>' +
@@ -68,7 +68,7 @@
       '<div class="legend"><span><i style="background:#FFB866" aria-hidden="true"></i>' + (v.date ? 'Earliest' : 'Lowest') + ' in that cell\'s own record</span>' +
       '<span><i style="background:#2A3F54;border:1px solid #7F93A5" aria-hidden="true"></i>Middle</span>' +
       '<span><i style="background:#8FC3FF" aria-hidden="true"></i>' + (v.date ? 'Latest' : 'Highest') + '</span>' +
-      '<span><i class="key-empty" aria-hidden="true"></i>No value, or no proven trend to project</span></div>' +
+      '<span><i class="key-empty" aria-hidden="true"></i>No value, or no significant trend to project</span></div>' +
       '<ul class="readout" id="map-readout"></ul>' +
       '<p class="caption">Each cell is coloured against its own record, so a high valley and a low one can be compared. Select a square to open the full investigation for that point.</p>';
   }
@@ -77,7 +77,7 @@
     var v = WA.variable(m.v), projected = m.year > LAST, shown = 0;
     squares.forEach(function (sq, i) {
       var f = fit(i, m.v), x = valueAt(i, m.v, m.year), cell = C.cells[i];
-      var text = x.value === null ? (projected ? 'no proven trend, so no projection' : 'no value this year') : WA.val(v, x.value) + (projected ? ' (projected)' : '');
+      var text = x.value === null ? (projected ? 'no significant trend, so no projection' : 'no value this year') : WA.val(v, x.value) + (projected ? ' (projected)' : '');
       if (x.value === null) {
         sq.setStyle({ fillOpacity: 0, color: '#7F93A5', weight: 1, dashArray: '3 4' });
       } else {
@@ -91,7 +91,7 @@
     if (kind) {
       kind.className = projected ? 'warn' : 'caption';
       kind.textContent = projected
-        ? 'Projection for ' + m.year + '. Each cell\'s proven past line is extended; ' + shown + ' of ' + squares.length + ' cells have one. This is not a forecast, and nature does not have to follow the line.'
+        ? 'Projection for ' + m.year + '. Each cell\'s past trend line is extended; ' + shown + ' of ' + squares.length + ' cells have one. This is not a forecast, and nature does not have to follow the line.'
         : 'Record for ' + m.year + ': values from NASA POWER (MERRA-2).';
     }
     if (readout) {

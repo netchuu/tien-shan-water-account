@@ -10,13 +10,13 @@
   var MONTHLY = { SNODP: ['snowdepth', 'state'], PRECSNOLAND: ['snowfall', 'per_day'], PRECTOTCORR: ['precip', 'per_day'], T2M: ['temp', 'state'], FROST_DAYS: ['frost', 'state'], GWETROOT: ['soil', 'fraction'], EVLAND: ['evap', 'per_day'] };
   var QUESTIONS = [
     { id: 'melt', label: 'Is the snow melting earlier?', key: 'melt', yes: 'down', vars: ['melt', 'snowdepth', 'frost'], calendar: true,
-      answers: { yes: 'Yes. The snow is melting earlier.', no: 'No. The snow is melting later.', open: 'Not proven. The record shows no reliable shift in the melt date.' } },
+      answers: { yes: 'Yes. The snow is melting earlier.', no: 'No. The snow is melting later.', open: 'No clear change. The record shows no reliable shift in the melt date.' } },
     { id: 'water', label: 'Is less water arriving?', key: 'precip', yes: 'down', vars: ['precip', 'snowfall', 'evap', 'soil'],
-      answers: { yes: 'Yes. Less rain and snow is arriving.', no: 'No. More rain and snow is arriving.', open: 'Not proven. The record shows no reliable change in rain and snow.' } },
+      answers: { yes: 'Yes. Less rain and snow is arriving.', no: 'No. More rain and snow is arriving.', open: 'No clear change. The record shows no reliable change in rain and snow.' } },
     { id: 'warm', label: 'Is it getting warmer?', key: 'temp', yes: 'up', vars: ['temp', 'frost', 'summer'],
-      answers: { yes: 'Yes. It is getting warmer.', no: 'No. It is getting cooler.', open: 'Not proven. The record shows no reliable change in temperature.' } },
+      answers: { yes: 'Yes. It is getting warmer.', no: 'No. It is getting cooler.', open: 'No clear change. The record shows no reliable change in temperature.' } },
     { id: 'season', label: 'Is the growing season changing?', key: 'frostfree', yes: 'up', vars: ['frostfree', 'lastfrost', 'summer'],
-      answers: { yes: 'Yes. The frost-free season is getting longer.', no: 'Yes, the other way. The frost-free season is getting shorter.', open: 'Not proven. The record shows no reliable change in the frost-free season.' } }
+      answers: { yes: 'Yes. The frost-free season is getting longer.', no: 'Yes, the other way. The frost-free season is getting shorter.', open: 'No clear change. The record shows no reliable change in the frost-free season.' } }
   ];
   var DEMOS = [
     { label: 'Is the snow above Toktogul melting earlier?', where: { kind: 'basin', id: 'naryn' }, q: 'melt' },
@@ -194,7 +194,7 @@
   function sinceText(b, id) {
     var w = longRecord.windows[longRecord.windows.length - 1], st = WA.compute('long', b.id, id, 'year', w).stat;
     if (!st || st.first < w) return '';
-    return ' Over ' + st.first + ' to ' + st.last + ' alone the change is ' + (st.proven ? 'also proven.' : 'not proven: fewer years give the test less to work with.');
+    return ' Over ' + st.first + ' to ' + st.last + ' alone the change is ' + (st.proven ? 'also statistically significant.' : 'not statistically significant: fewer years give the test less to work with.');
   }
   function verdict(b, q) {
     var v = WA.variable(q.key), r = WA.compute('long', b.id, q.key, 'year', 0), st = r.stat;
@@ -205,7 +205,7 @@
     var weak = cautions(b, v, r).length > 0;
     return {
       cls: weak ? 'none' : st.cls,
-      text: q.answers[dir] + (dir !== 'open' ? (weak ? ' The test passes, but with a caution below.' : ' Proven.') : ''),
+      text: q.answers[dir] + (dir !== 'open' ? (weak ? ' The test passes, but with a caution below.' : '') : ''),
       detail: 'Since ' + st.first + ': ' + strip(WA.finding(v, 'year', st)) + sinceText(b, q.key)
     };
   }
@@ -302,12 +302,12 @@
     }
     if (/future|will\b|forecast|predict|next|continue|keep|20[3-9]\d/.test(t)) {
       var proj = found.map(function (f) { var p = WA.projection(b, f.v, f.r); return p ? f.v.label + ': ' + p : ''; }).filter(Boolean);
-      lines.push(proj.length ? proj.join(' ') : 'Nothing here is proven firmly enough to extend. The tool does not forecast; it only extends a proven past line, and none qualifies for this question.');
+      lines.push(proj.length ? proj.join(' ') : 'Nothing here has a significant enough trend to extend. The tool does not forecast; it only extends a past trend line, and none qualifies for this question.');
       if (WA.EXTRA.futureLines) WA.EXTRA.futureLines(b, ids.length ? ids : null).forEach(function (l) { lines.push(l); });
     }
     if (!ids.length && !lines.length) found = found.filter(function (f) { return f.r.stat.proven; });
     found.forEach(function (f) { lines.push(f.line); });
-    if (!lines.length && !notes.length) lines.push('Nothing is proven for ' + b.name + ' on this record.');
+    if (!lines.length && !notes.length) lines.push('No significant trend for ' + b.name + ' on this record.');
     return notes.concat(lines);
   }
   function answer(role, parts, by) {
