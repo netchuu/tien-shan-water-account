@@ -216,11 +216,12 @@
     var cards = q.vars.map(function (id) {
       var v = WA.variable(id), r = WA.compute('long', b.id, id, 'year', 0), st = r.stat;
       if (!st) return '<section class="panel card"><h3 class="panel-title">' + v.label + '</h3><p class="caption">' + WA.DEFINE[id] + '</p><div class="placeholder">[NO DATA FOR THIS PLACE]</div></section>';
-      var label = b.name + ' ' + v.label.toLowerCase() + ', ' + st.first + ' to ' + st.last + ', ' + WA.words(st, v);
+      var w = WA.words(st, v);
+      var label = b.name + ' ' + v.label.toLowerCase() + ', ' + st.first + ' to ' + st.last + (w ? ', ' + w : '');
       var proj = WA.projection(b, v, r);
       return '<section class="panel card"><h3 class="panel-title">' + v.label + '</h3>' +
         '<p class="caption">' + WA.DEFINE[id] + '</p>' +
-        '<p class="card-figure"><strong class="' + (st.cls === 'none' ? '' : st.cls) + '">' + WA.num(st.perDecade, true) + ' ' + v.unit + '</strong> per decade, ' + WA.words(st, v) + '</p>' +
+        '<p class="card-figure"><strong class="' + (st.cls === 'none' ? '' : st.cls) + '">' + WA.num(st.perDecade, true) + ' ' + v.unit + '</strong> per decade' + (w ? ', ' + w : '') + '</p>' +
         WA.chart(r.series, st, label) +
         '<div class="axis"><span>' + st.first + '</span><span>Average ' + WA.val(v, st.mean) + ', ' + WA.pText(st.p) + '</span><span>' + st.last + '</span></div>' +
         cautions(b, v, r).map(function (c) { return '<p class="warn">' + c + '</p>'; }).join('') +
@@ -332,9 +333,6 @@
     return '<div class="head"><h1 class="title">Is your water changing?</h1></div>' +
       '<p class="lead">Pick a place and a question. The tool tests 45 years of NASA records and answers.</p>' +
       '<div class="steps"><section class="panel"><h2 class="panel-title">Where?</h2>' +
-      '<div class="btn-row" role="group" aria-label="Basin">' + D.basins.filter(function (b) { return !b.custom; }).map(function (b) {
-        return '<button type="button" class="btn" data-inv="basin" data-value="' + b.id + '" aria-pressed="' + pressed(w.kind === 'basin' && w.id === b.id) + '">' + b.name + '</button>';
-      }).join('') + '</div>' +
       '<div id="map" aria-label="Map. Select a basin, a city or any point."></div>' +
       '<p class="caption" id="inv-where">' + whereText() + '</p>' +
       '<details' + (w.kind === 'point' && !w.fromMap ? ' open' : '') + '><summary>Type coordinates</summary><form class="place-form" data-form="point">' +
@@ -355,7 +353,7 @@
   }
   function whereText() {
     var w = inv.where;
-    if (w.kind === 'basin') return 'Chosen: the ' + WA.basin(w.id).name + ' basin, ' + WA.basin(w.id).range + '. Or select a city or any point on the map.';
+    if (w.kind === 'basin') return 'Chosen: the ' + WA.basin(w.id).name + ' basin, ' + WA.basin(w.id).range + '. Select another basin, a city or any point on the map.';
     return 'Chosen: ' + w.name + ', ' + (+w.lat).toFixed(2) + '°, ' + (+w.lon).toFixed(2) + '°. Its record is fetched live from NASA.';
   }
   function setStatus(text) {

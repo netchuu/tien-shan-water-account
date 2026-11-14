@@ -206,8 +206,8 @@
   function dirWord(v, up) { return v && v.date ? (up ? 'later' : 'earlier') : (up ? 'rising' : 'falling'); }
   function words(st, v) {
     if (!st) return 'not enough years';
-    if (st.proven) return dirWord(v, st.slope > 0) + ', proven';
-    return st.short ? 'not proven, short record' : 'not proven';
+    if (st.proven) return dirWord(v, st.slope > 0);
+    return st.short ? 'short record' : '';
   }
   function periodName(month) { return month === 'year' ? 'whole year' : MONTHS[+month - 1]; }
   // "Yearly snowfall", "March snow water", "Average air temperature".
@@ -439,8 +439,14 @@
           perVar[v.id] = perVar[v.id] || { up: [], down: [] };
           perVar[v.id][st.cls].push(b.name + (r.step ? ' (one step)' : '') + (clash ? ' (sources disagree)' : ''));
         }
+        var subs = [];
+        var w = words(st, v);
+        if (w) subs.push(w);
+        if (st.short) subs.push(st.first + ' to ' + st.last);
+        if (r.step) subs.push('one step in ' + r.step.year);
+        if (clash) subs.push('sources disagree');
         return '<td><a class="cell ' + st.cls + '" href="' + link('trend', { record: state.record, from: state.from, basin: b.id, variable: v.id, month: 'year' }) + '">' +
-          num(st.perDecade, true) + ' ' + v.unit + '<span>' + words(st, v) + (st.short ? ', ' + st.first + ' to ' + st.last : '') + (r.step ? ', one step in ' + r.step.year : '') + (clash ? ', sources disagree' : '') + '</span></a></td>';
+          num(st.perDecade, true) + ' ' + v.unit + '<span>' + subs.join(', ') + '</span></a></td>';
       }).join('') + '</tr>';
     }).join('');
     var lines = vars.filter(function (v) { return perVar[v.id]; }).map(function (v) {
@@ -479,9 +485,9 @@
     if (v.fixed) state.month = 'year';
     var r = result(b.id, v.id, state.month), st = r.stat;
     var side = recordVariables().map(function (x) {
-      var s = result(b.id, x.id, state.month).stat;
+      var s = result(b.id, x.id, state.month).stat, w = s ? words(s, x) : '';
       return '<button type="button" class="var-btn ' + (s ? s.cls : 'none') + '" data-set="variable" data-value="' + x.id + '" aria-pressed="' + (x.id === v.id) + '">' +
-        '<b>' + x.label + '</b>' + (s ? '<strong class="' + (s.cls === 'none' ? '' : s.cls) + '">' + num(s.perDecade, true) + ' ' + x.unit + '</strong> ' + words(s, x) : '[NO DATA]') + '</button>';
+        '<b>' + x.label + '</b>' + (s ? '<strong class="' + (s.cls === 'none' ? '' : s.cls) + '">' + num(s.perDecade, true) + ' ' + x.unit + '</strong>' + (w ? ' ' + w : '') : '[NO DATA]') + '</button>';
     }).join('');
     var months = '<label class="field">Period <select data-set="month" aria-label="Period">' +
       '<option value="year"' + (state.month === 'year' ? ' selected' : '') + '>Whole year</option>' +
@@ -495,12 +501,12 @@
       var share = v.id !== 'temp' && v.id !== 'soil' && !v.fixed && st.mean > 0 ? ', a change of ' + Math.round(Math.abs(st.perDecade / st.mean * 100)) + '% of it each decade' : '';
       var label = b.name + ' ' + subject(v, state.month).toLowerCase() + ', ' + st.first + ' to ' + st.last + ', ' +
         (st.proven ? 'with a ' + (st.slope > 0 ? 'rising' : 'falling') + ' trend line' : 'with a trend line that is not proven');
-      var src = source(state.record, b.id, v.id), conflict = SNOW[v.id] && state.month === 'year' ? snowConflict(b.id) : '';
+      var src = source(state.record, b.id, v.id), conflict = SNOW[v.id] && state.month === 'year' ? snowConflict(b.id) : '', w = words(st, v);
       main = '<section class="panel board-main">' +
         '<h1 class="panel-title">' + subject(v, state.month) + '</h1>' +
         (DEFINE[v.id] ? '<p class="caption">' + DEFINE[v.id] + '</p>' : '') +
         '<div class="hero"><span class="hero-figure ' + (st.cls === 'none' ? '' : st.cls) + '">' + num(st.perDecade, true) + '</span>' +
-        '<span class="hero-words">' + v.unit + ' per decade<br>' + words(st, v) + '</span></div>' +
+        '<span class="hero-words">' + v.unit + ' per decade' + (w ? '<br>' + w : '') + '</span></div>' +
         chart(r.series, st, label) +
         '<div class="axis"><span>' + st.first + '</span><span>Average ' + val(v, st.mean) + share + ', test ' + pText(st.p) + '</span><span>' + st.last + '</span></div>' +
         '<p class="caption">Source: ' + src.source + '. ' + (v.kind === 'model' ? 'A model estimate, not a measurement.' : 'A reanalysis: weather observations blended into a model.') +
@@ -583,9 +589,10 @@
       }
       var label = b.name + ' ' + subject(v, 'year').toLowerCase() + ' by year, ' + r.series.years[0] + ' to ' + r.series.years[r.series.years.length - 1] + '. ' +
         (st && st.proven ? (st.slope > 0 ? 'Blue stripes, meaning more, become more common towards the end.' : 'Amber stripes, meaning less, become more common towards the end.') : 'No proven direction.');
+      var w = words(st, v);
       return '<div class="band-head"><h2 class="panel-title">' + b.name + ', ' + b.range + '</h2>' +
-        '<span><strong class="' + (st && st.cls !== 'none' ? st.cls : '') + '">' + (st ? num(st.perDecade, true) + ' ' + v.unit : '') + '</strong> per decade, ' + words(st, v) +
-        (r.step ? ', one step in ' + r.step.year : '') + '</span></div>' +
+        '<span><strong class="' + (st && st.cls !== 'none' ? st.cls : '') + '">' + (st ? num(st.perDecade, true) + ' ' + v.unit : '') + '</strong> per decade' +
+        (w ? ', ' + w : '') + (r.step ? ', one step in ' + r.step.year : '') + '</span></div>' +
         '<div class="stripes" role="img" aria-label="' + label + '">' + cells + '</div>' +
         (missing ? '<p class="caption">Dashed years are not in the loaded file for ' + b.name + ' (' + source(state.record, b.id, v.id).source + ').</p>' : '');
     }).join('');
@@ -642,7 +649,8 @@
         if (cells[0].st.proven && !cells[cells.length - 1].st.proven) lost++;
         if (!cells[0].st.proven && cells[cells.length - 1].st.proven) { gained++; if (cells[cells.length - 1].step) gainedStep++; }
         winRows += '<tr><td>' + b.name + '</td><td>' + v.label + ', ' + v.unit + '</td>' + cells.map(function (c) {
-          return '<td>' + num(c.st.perDecade, true) + ', ' + words(c.st, v) + (c.step ? ', one step in ' + c.step.year : '') + '</td>';
+          var w = words(c.st, v);
+          return '<td>' + num(c.st.perDecade, true) + (w ? ', ' + w : '') + (c.step ? ', one step in ' + c.step.year : '') + '</td>';
         }).join('') + '</tr>';
       });
     });
@@ -699,7 +707,6 @@
     return '<div class="prose"><h1 class="title">About</h1>' +
       '<p>Tien Shan Water Account was built for the NASA Space Apps Challenge 2026 in Bishkek, for the challenge "Be an Earth system trend detective!".</p>' +
       '<h2>Who it is for</h2><ul>' + ROLES.map(function (r) { return '<li><strong>' + r.label + '.</strong> ' + r.job + '</li>'; }).join('') + '</ul>' +
-      '<h2>Team</h2><p>[TEAM NAMES AND ROLES]</p>' +
       '<h2>Code and data</h2><p><a href="https://github.com/netchuu/tien-shan-water-account">github.com/netchuu/tien-shan-water-account</a></p>' +
       '<p>The data are open NASA products. To add a basin, add its box to tools/build_data.py, download its files and run the script.</p>' +
       '<h2>Use of AI</h2><p>AI tools helped with research, code and text during the hackathon. The figures on screen are calculated from NASA data by the code in this repository, and the statements use fixed templates.</p>' +
@@ -711,7 +718,10 @@
   function downloadCsv() {
     var b = basin(state.basin), v = variable(state.variable), r = result(b.id, v.id, state.month), st = r.stat, src = source(state.record, b.id, v.id);
     var lines = ['# Tien Shan Water Account', '# Place: ' + b.name + ' (' + b.range + ')', '# Variable: ' + subject(v, state.month) + ', ' + v.unit, '# Source: ' + src.source + ' (' + src.product + ')'];
-    if (st) lines.push('# Theil-Sen slope: ' + st.perDecade.toFixed(4) + ' ' + v.unit + ' per decade; Mann-Kendall p = ' + st.p.toFixed(4) + '; ' + words(st, v));
+    if (st) {
+      var w = words(st, v);
+      lines.push('# Theil-Sen slope: ' + st.perDecade.toFixed(4) + ' ' + v.unit + ' per decade; Mann-Kendall p = ' + st.p.toFixed(4) + (w ? '; ' + w : ''));
+    }
     lines.push('year,value');
     r.series.years.forEach(function (y, i) { lines.push(y + ',' + r.series.values[i].toFixed(4)); });
     var a = document.createElement('a');
