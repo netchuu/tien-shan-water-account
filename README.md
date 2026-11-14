@@ -28,9 +28,10 @@ To serve it locally instead: `python3 -m http.server 8931` and open http://127.0
 
 - **Investigate (start page):** pick a place (a basin, a city, a click on the map, or coordinates) and a question: is the snow melting earlier, is less water arriving, is it getting warmer, is the growing season changing. The tool tests the NASA record and returns a case file: the answer, the evidence with plain definitions, cautions, and where the line would be in ten years.
 - **Map over time:** one square per NASA grid cell (73 cells), coloured by its value in the chosen year. A slider and a Play button run from 1981 to 2025 and on to 2035, where each cell's proven trend line is extended as a labelled projection. Cells without a proven trend are left empty. Built by `tools/build_cells.py` into `data/cells.js`.
+- **Climate-model projections:** each evidence card adds what three NASA NEX-GDDP-CMIP6 models project for 2043–2050 against 2005–2012 (middle emissions path), with the spread between models. Built by `tools/build_future.py` into `data/future.js`.
 - **Snow calendar:** average snow depth on each day of the year, early years against recent years against this year, and the shift in the date the snow is half gone.
-- **Ask:** type a question about the place. Without a key the tool answers from its own rules. With an Anthropic API key (entered on the page, kept in the browser) Claude answers from the calculated figures only.
-- **All basins:** every basin against every variable, with the change per decade and a verdict.
+- **Ask:** a conversation about the place. Without a key the tool answers from its own rules. With an Anthropic API key (entered on the page, kept in the browser) Claude answers from the calculated figures only.
+- **Explore data** holds four views. **All basins:** every basin against every variable, with the change per decade and a verdict.
 - **Trend:** one place and variable in depth, for the whole year or a single month, with old and new averages and a CSV download.
 - **Statement:** the findings as sentences, and what they mean for a water engineer, a dam dispatcher or a negotiator. Printable.
 - **Compare:** one variable across the basins as yearly stripes.

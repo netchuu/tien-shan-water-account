@@ -601,7 +601,9 @@
     var mid = Math.round((y0 + y1) / 2);
     return recordControls() +
       '<div class="head"><h1 class="title">' + subject(v, 'year') + ', one stripe a year</h1><span class="caption">' + y0 + ' to ' + y1 + '</span></div>' +
-      '<div class="btn-row" role="group" aria-label="Variable">' + recordVariables().map(function (x) { return button('cmp', x.id, x.label, x.id === v.id); }).join('') + '</div>' + bands +
+      '<label class="field">Variable <select data-set="cmp" aria-label="Variable">' + recordVariables().map(function (x) {
+        return '<option value="' + x.id + '"' + (x.id === v.id ? ' selected' : '') + '>' + x.label + '</option>';
+      }).join('') + '</select></label>' + bands +
       '<div class="axis"><span>' + y0 + '</span><span>' + mid + '</span><span>' + y1 + '</span></div>' +
       '<div class="legend"><span><i style="background:#FFB866" aria-hidden="true"></i>' + (v.date ? 'Earliest' : 'Lowest') + ' in that basin\'s record</span>' +
       '<span><i style="background:#2A3F54;border:1px solid #7F93A5" aria-hidden="true"></i>Middle</span>' +
@@ -779,7 +781,7 @@
     state[key] = key === 'from' ? +value : value;
     normalise();
     try { history.replaceState(null, '', hashFor()); } catch (e) { /* some browsers refuse this on file pages; the page still works */ }
-    render({ set: key, value: key === 'month' ? '' : String(state[key]) });
+    render({ set: key, value: key === 'month' || key === 'cmp' ? '' : String(state[key]) });
   }
 
   document.addEventListener('click', function (e) {
