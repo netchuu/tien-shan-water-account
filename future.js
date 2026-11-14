@@ -52,10 +52,12 @@
     var text = sentence(b, v);
     return (text ? '<p class="future">' + text + '</p>' : '') + (earlierPanel ? earlierPanel(b, v, r) : '');
   };
-  // For the question box: the same sentences as plain text.
-  WA.EXTRA.futureFacts = function (b) {
-    var lines = WA.D.variables.map(function (v) { var t = sentence(b, v); return t ? v.label + ': ' + t : ''; }).filter(Boolean);
-    return lines.length ? '\nProjections from climate models (' + F.source + '; scenario ' + F.scenario + '; these are model projections, not the tool\'s own):\n- ' + lines.join('\n- ') : '';
+  // For the question box: the same sentences as plain text, for the chosen variables or for all.
+  WA.EXTRA.futureLines = function (b, ids) {
+    return WA.D.variables.filter(function (v) { return !ids || ids.indexOf(v.id) >= 0; }).map(function (v) {
+      var t = sentence(b, v);
+      return t ? v.label + ': ' + t : '';
+    }).filter(Boolean);
   };
   WA.EXTRA.methodExtra = function () {
     return '<h2>What the climate models project</h2>' +

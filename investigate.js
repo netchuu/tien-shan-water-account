@@ -23,8 +23,7 @@
     { label: 'Is Bishkek getting warmer?', where: { kind: 'point', name: 'Bishkek', lat: 42.87, lon: 74.59 }, q: 'warm' },
     { label: 'Is the growing season above the Chu valley changing?', where: { kind: 'basin', id: 'chu' }, q: 'season' }
   ];
-  var KEY_STORE = 'water-account-anthropic-key';
-  var inv = { where: { kind: 'basin', id: 'naryn' }, q: 'melt', caseOf: null, status: '', chat: [], asking: false, busy: false };
+  var inv = { where: { kind: 'basin', id: 'naryn' }, q: 'melt', caseOf: null, status: '', chat: [], busy: false };
   var map = null, marker = null;
 
   /* ---------- variables built from daily data ---------- */
@@ -243,11 +242,10 @@
 
   /* ---------- questions in plain words ---------- */
 
-  function hasKey() { try { return !!localStorage.getItem(KEY_STORE); } catch (e) { return false; } }
   function chatHtml() {
     return inv.chat.map(function (t) {
       if (t.role === 'user') return '<div class="turn you"><p class="caption">You</p><p></p></div>';
-      return '<div class="turn"><p class="caption">' + (t.role === 'ai' ? 'Claude' : t.role === 'wait' ? 'Claude' : 'The tool') + '</p>' +
+      return '<div class="turn"><p class="caption">The tool</p>' +
         t.parts.map(function () { return '<p></p>'; }).join('') + (t.by ? '<p class="caption"></p>' : '') + '</div>';
     }).join('');
   }
@@ -269,13 +267,9 @@
       '<p class="caption">Ask as many questions as you like. For example: when is the snow gone now? Will it keep changing? How sure is this?</p>' +
       '<div id="chat" class="chat" role="log" aria-live="polite" aria-label="Conversation"></div>' +
       '<form class="ask-form" data-form="ask"><label class="field wide">Your question <input type="text" name="q" maxlength="300" autocomplete="off"></label>' +
-      '<button type="submit" class="btn">Ask</button><button type="button" class="btn" data-inv="clearchat">Clear</button></form>' +
-      '<details><summary>' + (hasKey() ? 'AI answers are on. Change or remove the key' : 'Turn on AI answers (needs an Anthropic API key)') + '</summary>' +
-      '<p class="caption">Without a key, the tool answers from its own rules. With a key, your questions and the figures for this place are sent to Claude, which answers in plain words from those figures only. The key is kept in this browser and sent only to api.anthropic.com.</p>' +
-      '<div class="ask-form"><label class="field wide">API key <input type="password" id="ai-key" autocomplete="off" placeholder="sk-ant-..."></label>' +
-      '<button type="button" class="btn" data-inv="savekey">Save on this device</button><button type="button" class="btn" data-inv="clearkey">Remove</button></div></details></section>';
+      '<button type="submit" class="btn">Ask</button><button type="button" class="btn" data-inv="clearchat">Clear</button></form></section>';
   }
-  // Every finding for the place, as plain text. Used by both the rule-based answer and the AI.
+  // Every finding for the place, as plain text.
   function facts(b, ids) {
     return (ids || longRecord.variables).map(function (id) {
       var v = WA.variable(id), r = WA.compute('long', b.id, id, 'year', 0);
@@ -308,6 +302,7 @@
     if (/future|will\b|forecast|predict|next|continue|keep|20[3-9]\d/.test(t)) {
       var proj = found.map(function (f) { var p = WA.projection(b, f.v, f.r); return p ? f.v.label + ': ' + p : ''; }).filter(Boolean);
       lines.push(proj.length ? proj.join(' ') : 'Nothing here is proven firmly enough to extend. The tool does not forecast; it only extends a proven past line, and none qualifies for this question.');
+      if (WA.EXTRA.futureLines) WA.EXTRA.futureLines(b, ids.length ? ids : null).forEach(function (l) { lines.push(l); });
     }
     if (!ids.length && !lines.length) found = found.filter(function (f) { return f.r.stat.proven; });
     found.forEach(function (f) { lines.push(f.line); });
@@ -315,64 +310,18 @@
     return notes.concat(lines);
   }
   function answer(role, parts, by) {
-    if (inv.chat.length && inv.chat[inv.chat.length - 1].role === 'wait') inv.chat.pop();
     inv.chat.push({ role: role, parts: parts, by: by });
     drawChat();
   }
+  // Answers come from fixed rules over the calculated figures. No AI service is called.
   function ask(question) {
     var b = WA.basin(inv.caseOf);
     question = (question || '').trim();
-    if (!b || !question || inv.asking) return;
-    var key = null;
-    try { key = localStorage.getItem(KEY_STORE); } catch (e) { key = null; }
-    var rules = localAnswer(question, b);
-    // Earlier turns, as the API wants them: user and assistant in turn.
-    var history = inv.chat.filter(function (t) { return t.role !== 'wait'; }).map(function (t) {
-      return { role: t.role === 'user' ? 'user' : 'assistant', content: t.role === 'user' ? t.text : t.parts.join('\n') };
-    });
+    if (!b || !question) return;
     inv.chat.push({ role: 'user', text: question });
     var input = document.querySelector('form[data-form="ask"] input[name="q"]');
     if (input) input.value = '';
-    if (!key) { answer('tool', rules, 'Answered by the tool\'s own rules from the calculated figures. No AI was used.'); return; }
-    inv.asking = true;
-    answer('wait', ['Thinking. This takes a few seconds.'], '');
-    inv.chat[inv.chat.length - 1].role = 'wait';
-    var context = 'Place: ' + b.name + ' (' + b.range + ').\nRecord: NASA POWER (MERRA-2 reanalysis), 1981 to 2025, whole-year values.\n' +
-      'Findings calculated by the tool (Theil-Sen slope, Mann-Kendall test, proven means p below 0.05):\n- ' + facts(b).map(function (f) { return f.line; }).join('\n- ') +
-      (WA.EXTRA.futureFacts ? WA.EXTRA.futureFacts(b) : '') +
-      '\nLimits: past trend, not a forecast; model and reanalysis data, not ground measurements; the models contain no glaciers; grid cells are about 50 km wide.';
-    fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2026-10-21',
-        'anthropic-beta': 'server-side-fallback-2026-07-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-5-5',
-        max_tokens: 4000,
-        output_config: { effort: 'low' },
-        fallbacks: 'default',
-        system: 'You explain climate trend results for one place to a member of the public, in a short conversation. Use only the findings and limits below. ' +
-          'Never invent a number, a cause or a forecast. If the findings cannot answer the question, say so plainly. Mention a caution whenever the finding you use carries one. ' +
-          'Write plain text with no markdown, in at most 120 words, in the language of the question.\n\n' + context,
-        messages: history.concat([{ role: 'user', content: question }])
-      })
-    }).then(function (res) {
-      return res.json().then(function (body) {
-        if (!res.ok) throw new Error(body && body.error && body.error.message ? body.error.message : 'status ' + res.status);
-        if (body.stop_reason === 'refusal') throw new Error('the model declined to answer');
-        var text = (body.content || []).filter(function (c) { return c.type === 'text'; }).map(function (c) { return c.text; }).join('\n').trim();
-        if (!text) throw new Error('the answer came back empty');
-        inv.asking = false;
-        answer('ai', text.split(/\n+/), 'Written by Claude from the calculated figures. Check any number against the evidence cards.');
-      });
-    }).catch(function (err) {
-      inv.asking = false;
-      answer('tool', rules, 'The AI answer failed (' + (err && err.message ? err.message : 'no connection') + '), so this is the tool\'s own rule-based answer.');
-    });
+    answer('tool', localAnswer(question, b), '');
   }
 
   /* ---------- the page ---------- */
@@ -504,12 +453,6 @@
     if (act === 'clearchat') { inv.chat = []; drawChat(); }
     if (act === 'go') run();
     if (act === 'demo') { var d = DEMOS[+value]; inv.where = JSON.parse(JSON.stringify(d.where)); inv.q = d.q; inv.caseOf = null; WA.render(); run(); }
-    if (act === 'savekey') {
-      var input = document.getElementById('ai-key');
-      try { if (input && input.value.trim()) localStorage.setItem(KEY_STORE, input.value.trim()); } catch (err) { /* storage blocked: AI stays off */ }
-      WA.render();
-    }
-    if (act === 'clearkey') { try { localStorage.removeItem(KEY_STORE); } catch (err) { /* nothing to remove */ } WA.render(); }
   });
   document.addEventListener('submit', function (e) {
     var form = e.target.getAttribute ? e.target.getAttribute('data-form') : null;

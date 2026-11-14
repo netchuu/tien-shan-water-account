@@ -648,7 +648,7 @@
     });
     var conflicts = D.basins.map(function (b) { return snowConflict(b.id); }).filter(Boolean);
     return '<div class="prose wide"><h1 class="title">Method and data</h1>' +
-      '<p>Every figure in this tool is calculated in your browser from the files listed here. Nothing is typed in by hand. The sentences come from fixed templates. The one exception is the question box: if you turn on AI answers with your own key, Claude writes that answer from the calculated figures, and the answer is labelled as written by AI.</p>' +
+      '<p>Every figure in this tool is calculated in your browser from the files listed here. Nothing is typed in by hand. The sentences, including the answers in the question box, come from fixed templates and rules. No AI writes anything while you use the tool.</p>' +
       '<h2>How a trend is tested</h2><ol>' +
       '<li>Take monthly values for the basin: the mean of every NASA grid cell inside the basin box.</li>' +
       '<li>Remove the seasonal cycle by comparing like with like: whole years with whole years, or one month with the same month in other years. A year counts only if all twelve months are present.</li>' +
@@ -702,7 +702,7 @@
       '<h2>Team</h2><p>[TEAM NAMES AND ROLES]</p>' +
       '<h2>Code and data</h2><p><a href="https://github.com/netchuu/tien-shan-water-account">github.com/netchuu/tien-shan-water-account</a></p>' +
       '<p>The data are open NASA products. To add a basin, add its box to tools/build_data.py, download its files and run the script.</p>' +
-      '<h2>Use of AI</h2><p>AI tools helped with research, code and text during the hackathon. The figures on screen are calculated from NASA data by the code in this repository, and the statements use fixed templates. The question box can use Claude if the visitor adds their own API key; those answers are labelled.</p>' +
+      '<h2>Use of AI</h2><p>AI tools helped with research, code and text during the hackathon. The figures on screen are calculated from NASA data by the code in this repository, and the statements use fixed templates.</p>' +
       '<h2>Next steps</h2><ul><li>MODIS satellite snow cover, to check the modelled melt dates.</li><li>True basin outlines in place of rectangles.</li><li>Kyrgyz and Russian versions.</li><li>A yearly update script.</li></ul></div>';
   }
 
