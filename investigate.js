@@ -24,7 +24,7 @@
     { label: 'Is the growing season above the Chu valley changing?', where: { kind: 'basin', id: 'chu' }, q: 'season' }
   ];
   var KEY_STORE = 'water-account-anthropic-key';
-  var inv = { where: { kind: 'basin', id: 'naryn' }, q: 'melt', caseOf: null, status: '', answer: '', asked: '', busy: false };
+  var inv = { where: { kind: 'basin', id: 'naryn' }, q: 'melt', caseOf: null, status: '', chat: [], asking: false, busy: false };
   var map = null, marker = null;
 
   /* ---------- variables built from daily data ---------- */
@@ -244,13 +244,34 @@
   /* ---------- questions in plain words ---------- */
 
   function hasKey() { try { return !!localStorage.getItem(KEY_STORE); } catch (e) { return false; } }
+  function chatHtml() {
+    return inv.chat.map(function (t) {
+      if (t.role === 'user') return '<div class="turn you"><p class="caption">You</p><p></p></div>';
+      return '<div class="turn"><p class="caption">' + (t.role === 'ai' ? 'Claude' : t.role === 'wait' ? 'Claude' : 'The tool') + '</p>' +
+        t.parts.map(function () { return '<p></p>'; }).join('') + (t.by ? '<p class="caption"></p>' : '') + '</div>';
+    }).join('');
+  }
+  // Text goes in through textContent, so nothing typed or returned is ever treated as HTML.
+  function drawChat() {
+    var box = document.getElementById('chat');
+    if (!box) return;
+    box.innerHTML = chatHtml();
+    Array.prototype.forEach.call(box.children, function (el, k) {
+      var t = inv.chat[k], ps = el.querySelectorAll('p');
+      if (t.role === 'user') { ps[1].textContent = t.text; return; }
+      t.parts.forEach(function (p, n) { ps[n + 1].textContent = p; });
+      if (t.by) ps[ps.length - 1].textContent = t.by;
+    });
+    box.scrollTop = box.scrollHeight;
+  }
   function askBox(b) {
     return '<section class="panel ask"><h3 class="panel-title">Ask about ' + b.name + '</h3>' +
-      '<form class="ask-form" data-form="ask"><label class="field wide">Your question <input type="text" name="q" maxlength="200" autocomplete="off" placeholder="For example: when is the snow gone now? Will it keep changing?" value="' + inv.asked.replace(/"/g, '&quot;') + '"></label>' +
-      '<button type="submit" class="btn">Ask</button></form>' +
-      '<div id="answer" role="status" class="answer">' + (inv.answer || '') + '</div>' +
+      '<p class="caption">Ask as many questions as you like. For example: when is the snow gone now? Will it keep changing? How sure is this?</p>' +
+      '<div id="chat" class="chat" role="log" aria-live="polite" aria-label="Conversation"></div>' +
+      '<form class="ask-form" data-form="ask"><label class="field wide">Your question <input type="text" name="q" maxlength="300" autocomplete="off"></label>' +
+      '<button type="submit" class="btn">Ask</button><button type="button" class="btn" data-inv="clearchat">Clear</button></form>' +
       '<details><summary>' + (hasKey() ? 'AI answers are on. Change or remove the key' : 'Turn on AI answers (needs an Anthropic API key)') + '</summary>' +
-      '<p class="caption">Without a key, the tool answers from its own rules. With a key, your question and the figures for this place are sent to Claude, which answers in plain words from those figures only. The key is kept in this browser and sent only to api.anthropic.com.</p>' +
+      '<p class="caption">Without a key, the tool answers from its own rules. With a key, your questions and the figures for this place are sent to Claude, which answers in plain words from those figures only. The key is kept in this browser and sent only to api.anthropic.com.</p>' +
       '<div class="ask-form"><label class="field wide">API key <input type="password" id="ai-key" autocomplete="off" placeholder="sk-ant-..."></label>' +
       '<button type="button" class="btn" data-inv="savekey">Save on this device</button><button type="button" class="btn" data-inv="clearkey">Remove</button></div></details></section>';
   }
@@ -293,29 +314,32 @@
     if (!lines.length && !notes.length) lines.push('Nothing is proven for ' + b.name + ' on this record.');
     return notes.concat(lines);
   }
-  function showAnswer(parts, by) {
-    var box = document.getElementById('answer');
-    inv.answer = '';
-    if (!box) return;
-    box.innerHTML = '';
-    parts.forEach(function (p) { var el = document.createElement('p'); el.textContent = p; box.appendChild(el); });
-    var note = document.createElement('p');
-    note.className = 'caption';
-    note.textContent = by;
-    box.appendChild(note);
-    inv.answer = box.innerHTML;
+  function answer(role, parts, by) {
+    if (inv.chat.length && inv.chat[inv.chat.length - 1].role === 'wait') inv.chat.pop();
+    inv.chat.push({ role: role, parts: parts, by: by });
+    drawChat();
   }
   function ask(question) {
     var b = WA.basin(inv.caseOf);
-    if (!b || !question.trim()) return;
-    inv.asked = question.trim();
+    question = (question || '').trim();
+    if (!b || !question || inv.asking) return;
     var key = null;
     try { key = localStorage.getItem(KEY_STORE); } catch (e) { key = null; }
     var rules = localAnswer(question, b);
-    if (!key) { showAnswer(rules, 'Answered by the tool\'s own rules from the calculated figures. No AI was used.'); return; }
-    showAnswer(['Asking Claude. This takes a few seconds.'], '');
+    // Earlier turns, as the API wants them: user and assistant in turn.
+    var history = inv.chat.filter(function (t) { return t.role !== 'wait'; }).map(function (t) {
+      return { role: t.role === 'user' ? 'user' : 'assistant', content: t.role === 'user' ? t.text : t.parts.join('\n') };
+    });
+    inv.chat.push({ role: 'user', text: question });
+    var input = document.querySelector('form[data-form="ask"] input[name="q"]');
+    if (input) input.value = '';
+    if (!key) { answer('tool', rules, 'Answered by the tool\'s own rules from the calculated figures. No AI was used.'); return; }
+    inv.asking = true;
+    answer('wait', ['Thinking. This takes a few seconds.'], '');
+    inv.chat[inv.chat.length - 1].role = 'wait';
     var context = 'Place: ' + b.name + ' (' + b.range + ').\nRecord: NASA POWER (MERRA-2 reanalysis), 1981 to 2025, whole-year values.\n' +
       'Findings calculated by the tool (Theil-Sen slope, Mann-Kendall test, proven means p below 0.05):\n- ' + facts(b).map(function (f) { return f.line; }).join('\n- ') +
+      (WA.EXTRA.futureFacts ? WA.EXTRA.futureFacts(b) : '') +
       '\nLimits: past trend, not a forecast; model and reanalysis data, not ground measurements; the models contain no glaciers; grid cells are about 50 km wide.';
     fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -331,10 +355,10 @@
         max_tokens: 4000,
         output_config: { effort: 'low' },
         fallbacks: 'default',
-        system: 'You explain climate trend results for one place to a member of the public. Use only the findings and limits given in the user message. ' +
+        system: 'You explain climate trend results for one place to a member of the public, in a short conversation. Use only the findings and limits below. ' +
           'Never invent a number, a cause or a forecast. If the findings cannot answer the question, say so plainly. Mention a caution whenever the finding you use carries one. ' +
-          'Write plain text with no markdown, in at most 120 words, in the language of the question.',
-        messages: [{ role: 'user', content: context + '\n\nQuestion: ' + inv.asked }]
+          'Write plain text with no markdown, in at most 120 words, in the language of the question.\n\n' + context,
+        messages: history.concat([{ role: 'user', content: question }])
       })
     }).then(function (res) {
       return res.json().then(function (body) {
@@ -342,10 +366,12 @@
         if (body.stop_reason === 'refusal') throw new Error('the model declined to answer');
         var text = (body.content || []).filter(function (c) { return c.type === 'text'; }).map(function (c) { return c.text; }).join('\n').trim();
         if (!text) throw new Error('the answer came back empty');
-        showAnswer(text.split(/\n+/), 'Written by Claude from the calculated figures above. Check any number against the evidence cards.');
+        inv.asking = false;
+        answer('ai', text.split(/\n+/), 'Written by Claude from the calculated figures. Check any number against the evidence cards.');
       });
     }).catch(function (err) {
-      showAnswer(rules, 'The AI answer failed (' + (err && err.message ? err.message : 'no connection') + '), so this is the tool\'s own rule-based answer.');
+      inv.asking = false;
+      answer('tool', rules, 'The AI answer failed (' + (err && err.message ? err.message : 'no connection') + '), so this is the tool\'s own rule-based answer.');
     });
   }
 
@@ -395,7 +421,7 @@
   }
   function run() {
     var w = inv.where;
-    inv.answer = ''; inv.asked = '';
+    inv.chat = [];
     if (w.kind === 'basin') { inv.caseOf = w.id; inv.status = ''; WA.render(); scrollToCase(); return; }
     if (isNaN(w.lat) || isNaN(w.lon) || w.lat < -90 || w.lat > 90 || w.lon < -180 || w.lon > 180) { setStatus('[CHECK THE COORDINATES] Latitude runs from −90 to 90 and longitude from −180 to 180.'); return; }
     inv.busy = true;
@@ -463,7 +489,7 @@
   var earlier = WA.EXTRA.afterRender;
   WA.EXTRA.afterRender = function (page) {
     if (earlier) earlier(page);
-    if (page === '') initMap(); else { map = null; marker = null; }
+    if (page === '') { initMap(); drawChat(); } else { map = null; marker = null; }
   };
   // Lets another page (the map over time) hand a point to this one.
   WA.pick = function (name, lat, lon) {
@@ -479,7 +505,8 @@
     var act = el.getAttribute('data-inv'), value = el.getAttribute('data-value');
     if (act === 'basin') { inv.where = { kind: 'basin', id: value }; inv.caseOf = null; WA.render(); }
     if (act === 'city') { var c = CITIES[+value]; choosePoint(c[0], c[1], c[2], true); }
-    if (act === 'q') { inv.q = value; inv.answer = ''; WA.render(); if (inv.caseOf) scrollToCase(); }
+    if (act === 'q') { inv.q = value; WA.render(); if (inv.caseOf) scrollToCase(); }
+    if (act === 'clearchat') { inv.chat = []; drawChat(); }
     if (act === 'go') run();
     if (act === 'demo') { var d = DEMOS[+value]; inv.where = JSON.parse(JSON.stringify(d.where)); inv.q = d.q; inv.caseOf = null; WA.render(); run(); }
     if (act === 'savekey') {
