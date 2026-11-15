@@ -23,7 +23,7 @@
     { label: 'Is Bishkek getting warmer?', where: { kind: 'point', name: 'Bishkek', lat: 42.87, lon: 74.59 }, q: 'warm' },
     { label: 'Is the growing season above the Chu valley changing?', where: { kind: 'basin', id: 'chu' }, q: 'season' }
   ];
-  var inv = { where: { kind: 'basin', id: 'naryn' }, q: 'melt', caseOf: null, status: '', chat: [], busy: false };
+  var inv = { where: { kind: 'basin', id: 'naryn' }, q: 'melt', caseOf: null, status: '', chat: [], asking: false, busy: false };
   var map = null, marker = null;
 
   /* ---------- variables built from daily data ---------- */
@@ -196,6 +196,29 @@
     if (!st || st.first < w) return '';
     return ' Over ' + st.first + ' to ' + st.last + ' alone the change is ' + (st.proven ? 'also statistically significant.' : 'not statistically significant: fewer years give the test less to work with.');
   }
+  // An estimate for one coming year: the proven trend line at that year, or the recent average when no trend is proven.
+  // The range is where 8 in 10 past years fell around that same line or average.
+  function estimate(b, id, year) {
+    var r = WA.compute('long', b.id, id, 'year', 0), st = r.stat;
+    if (!st || year <= st.last || year > st.last + 10) return null;
+    var ys = r.series.years, vs = r.series.values, useLine = st.proven && !r.step, recent = vs.slice(-10), centre, resid;
+    if (useLine) {
+      centre = st.icpt + st.slope * (year - st.first);
+      resid = vs.map(function (x, i) { return x - (st.icpt + st.slope * (ys[i] - st.first)); });
+    } else {
+      centre = WA.mean(recent);
+      resid = recent.map(function (x) { return x - centre; });
+    }
+    resid.sort(function (x, y) { return x - y; });
+    function q(p) { var k = (resid.length - 1) * p, f = Math.floor(k); return resid[f] + (resid[Math.min(f + 1, resid.length - 1)] - resid[f]) * (k - f); }
+    return { value: centre, lo: centre + q(0.1), hi: centre + q(0.9), line: useLine, v: WA.variable(id) };
+  }
+  function estimateText(b, id, year) {
+    var e = estimate(b, id, year);
+    if (!e) return '';
+    return e.v.label + ', estimate for ' + year + ': ' + WA.val(e.v, e.value) + ', likely between ' + WA.val(e.v, e.lo) + ' and ' + WA.val(e.v, e.hi) + ' (' +
+      (e.line ? 'the proven trend line, with the spread of 8 in 10 past years around it' : 'no proven trend, so this is the average of the last ten years with their spread') + ').';
+  }
   function verdict(b, q) {
     var v = WA.variable(q.key), r = WA.compute('long', b.id, q.key, 'year', 0), st = r.stat;
     if (!st) {
@@ -206,7 +229,8 @@
     return {
       cls: weak ? 'none' : st.cls,
       text: q.answers[dir] + (dir !== 'open' ? (weak ? ' The test passes, but with a caution below.' : '') : ''),
-      detail: 'Since ' + st.first + ': ' + strip(WA.finding(v, 'year', st)) + sinceText(b, q.key)
+      detail: 'Since ' + st.first + ': ' + strip(WA.finding(v, 'year', st)) + sinceText(b, q.key),
+      next: estimateText(b, q.key, st.last + 1)
     };
   }
   function caseFile() {
@@ -232,9 +256,11 @@
     return '<section class="case" aria-label="Case file">' +
       '<div class="head"><h2 class="title">Case file: ' + b.name + '</h2><span class="caption">' + b.range + (b.elevation ? ', about ' + b.elevation + ' m' : '') + ', NASA record from 1981</span></div>' +
       '<div class="panel verdict"><p class="caption">' + q.label + '</p><p class="verdict-text ' + (head.cls === 'none' ? '' : head.cls) + '">' + head.text + '</p>' +
-      (head.detail ? '<p>' + head.detail + '</p>' : '') + '</div>' +
+      (head.detail ? '<p>' + head.detail + '</p>' : '') +
+      (head.next ? '<p class="future">' + head.next + ' An estimate from the past record, not a forecast of the weather.</p>' : '') + '</div>' +
       '<div class="cards">' + cards + '</div>' +
       (q.calendar ? calendar(b.id) : '') +
+      askBox(b) +
       '<p class="caption">' + (b.custom ? '' : '<a href="' + WA.link('statement', { record: 'long', from: 0, basin: b.id }) + '">What this means for a water engineer, a dam dispatcher or a negotiator</a>. ') +
       '<a href="' + WA.link('trend', { record: 'long', from: 0, basin: b.id, variable: q.key, month: 'year' }) + '">Every variable for ' + b.name + '</a>. ' +
       'Past record, not a forecast; no glaciers in the data. <a href="' + WA.link('method') + '">Limits</a>.</p></section>';
@@ -245,7 +271,7 @@
   function chatHtml() {
     return inv.chat.map(function (t) {
       if (t.role === 'user') return '<div class="turn you"><p class="caption">You</p><p></p></div>';
-      return '<div class="turn"><p class="caption">The tool</p>' +
+      return '<div class="turn"><p class="caption">' + (t.role === 'tool' ? 'The tool' : 'Assistant') + '</p>' +
         t.parts.map(function () { return '<p></p>'; }).join('') + (t.by ? '<p class="caption"></p>' : '') + '</div>';
     }).join('');
   }
@@ -264,7 +290,7 @@
   }
   function askBox(b) {
     return '<section class="panel ask"><h3 class="panel-title">Ask about ' + b.name + '</h3>' +
-      '<p class="caption">Ask as many questions as you like. For example: when is the snow gone now? Will it keep changing? How sure is this?</p>' +
+      '<p class="caption">Ask anything about this place. For example: what should we expect in 2027? When is the snow gone now? How sure is this?</p>' +
       '<div id="chat" class="chat" role="log" aria-live="polite" aria-label="Conversation"></div>' +
       '<form class="ask-form" data-form="ask"><label class="field wide">Your question <input type="text" name="q" maxlength="300" autocomplete="off"></label>' +
       '<button type="submit" class="btn">Ask</button><button type="button" class="btn" data-inv="clearchat">Clear</button></form></section>';
@@ -299,6 +325,13 @@
         lines.push(f.v.label + ': on average ' + WA.dayName(WA.mean(recent)) + ' over the last ' + recent.length + ' years on record (' + WA.dayName(WA.mean(vals)) + ' over the whole record).');
       });
     }
+    var named = t.match(/\b(20[2-9]\d)\b/), askedYear = named ? +named[1] : null;
+    if (askedYear || /forecast|predict|expect|next year|прогноз/.test(t)) {
+      var target = askedYear || new Date().getFullYear() + 1;
+      var est = (ids.length ? ids : ['melt', 'temp', 'precip', 'frost']).map(function (id) { return estimateText(b, id, target); }).filter(Boolean);
+      if (est.length) { lines.push(est.join(' ')); lines.push('These are estimates from the past record. They say what a typical ' + target + ' would look like, not what the weather will do.'); }
+      else if (askedYear) lines.push('The tool estimates single years only up to ten years past the record. For later decades see what the NASA climate models project.');
+    }
     if (/future|will\b|forecast|predict|next|continue|keep|20[3-9]\d/.test(t)) {
       var proj = found.map(function (f) { var p = WA.projection(b, f.v, f.r); return p ? f.v.label + ': ' + p : ''; }).filter(Boolean);
       lines.push(proj.length ? proj.join(' ') : 'Nothing here has a significant enough trend to extend. The tool does not forecast; it only extends a past trend line, and none qualifies for this question.');
@@ -310,18 +343,65 @@
     return notes.concat(lines);
   }
   function answer(role, parts, by) {
+    if (inv.chat.length && inv.chat[inv.chat.length - 1].role === 'wait') inv.chat.pop();
     inv.chat.push({ role: role, parts: parts, by: by });
     drawChat();
   }
-  // Answers come from fixed rules over the calculated figures. No AI service is called.
+  // The figures always come from the tool. If an AI key is configured (ai-config.js), Gemini writes the answer
+  // from those figures; otherwise, or if the call fails, the tool's own rule-based answer is shown.
+  var AI = window.WATER_AI || null;
+  var AI_MODELS = AI ? [AI.model || 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'] : [];
+  function briefing(b, question) {
+    var named = question.match(/\b(20[2-9]\d)\b/), year = named ? +named[1] : new Date().getFullYear() + 1;
+    var est = longRecord.variables.map(function (id) { return estimateText(b, id, year); }).filter(Boolean);
+    return 'Place: ' + b.name + ' (' + b.range + ').\nRecord: NASA POWER (MERRA-2 reanalysis), 1981 to now, whole-year values.\n' +
+      'Findings calculated by the tool (Theil-Sen slope, Mann-Kendall test; proven means p below 0.05):\n- ' + facts(b).map(function (f) { return f.line; }).join('\n- ') +
+      (est.length ? '\nEstimates for ' + year + ' calculated by the tool:\n- ' + est.join('\n- ') : '') +
+      (WA.EXTRA.futureLines && WA.EXTRA.futureLines(b).length ? '\nNASA climate-model projections (NEX-GDDP-CMIP6, middle emissions path):\n- ' + WA.EXTRA.futureLines(b).join('\n- ') : '') +
+      '\nLimits: estimates come from the past record and are not weather forecasts; model and reanalysis data, not ground measurements; no glaciers in the data; grid cells of about 50 km.';
+  }
+  function callGemini(model, body) {
+    return fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(AI.key), {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) throw new Error(data && data.error && data.error.message ? data.error.message : 'status ' + res.status);
+        var cand = (data.candidates || [])[0], parts = cand && cand.content && cand.content.parts ? cand.content.parts : [];
+        var text = parts.map(function (p) { return p.text || ''; }).join('').trim();
+        if (!text) throw new Error('the answer came back empty');
+        return text;
+      });
+    });
+  }
   function ask(question) {
     var b = WA.basin(inv.caseOf);
     question = (question || '').trim();
-    if (!b || !question) return;
+    if (!b || !question || inv.asking) return;
+    var rules = localAnswer(question, b);
+    var history = inv.chat.map(function (t) {
+      return { role: t.role === 'user' ? 'user' : 'model', parts: [{ text: t.role === 'user' ? t.text : t.parts.join('\n') }] };
+    });
     inv.chat.push({ role: 'user', text: question });
     var input = document.querySelector('form[data-form="ask"] input[name="q"]');
     if (input) input.value = '';
-    answer('tool', localAnswer(question, b), '');
+    if (!AI || !AI.key) { answer('tool', rules, ''); return; }
+    inv.asking = true;
+    answer('wait', ['Thinking. This takes a few seconds.'], '');
+    var body = {
+      systemInstruction: { parts: [{ text:
+        'You are the assistant of a tool that tests NASA climate records for one place. Answer the user in a friendly, plain way, in the language of the question, in at most 130 words and with no markdown. ' +
+        'Every number you give must come from the briefing below; never invent or adjust a number. If asked for a forecast or what to expect in a year, give the tool\'s estimate and its range, ' +
+        'and say in one short clause that it is an estimate from past records, not a weather forecast. If the briefing cannot answer, say so. Mention a caution when the finding you use carries one.\n\n' + briefing(b, question) }] },
+      contents: history.concat([{ role: 'user', parts: [{ text: question }] }]),
+      generationConfig: { maxOutputTokens: 1500, temperature: 0.4 }
+    };
+    callGemini(AI_MODELS[0], body).catch(function () { return callGemini(AI_MODELS[1], body); }).then(function (text) {
+      inv.asking = false;
+      answer('ai', text.split(/\n+/), 'Written by Gemini from the figures the tool calculated. Check any number against the cards above.');
+    }).catch(function (err) {
+      inv.asking = false;
+      answer('tool', rules, 'The AI answer was not available (' + (err && err.message ? String(err.message).slice(0, 80) : 'no connection') + '), so this is the tool\'s own answer.');
+    });
   }
 
   /* ---------- the page ---------- */
