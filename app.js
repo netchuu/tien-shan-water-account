@@ -7,7 +7,8 @@
   var ROLES = [
     { id: 'engineer', label: 'Water engineer', who: 'For the water engineer.', job: 'Decides in spring how much water to promise canals and farms for the summer.' },
     { id: 'dispatcher', label: 'Dam dispatcher', who: 'For the dam dispatcher.', job: 'Decides in autumn and winter how much water to release for electricity and how much to keep for summer.' },
-    { id: 'negotiator', label: 'Negotiator', who: 'For the negotiator.', job: 'Agrees release limits and schedules between upstream and downstream countries.' }
+    { id: 'negotiator', label: 'Negotiator', who: 'For the negotiator.', job: 'Agrees release limits and schedules between upstream and downstream countries.' },
+    { id: 'resident', label: 'Resident', who: 'For a resident.', job: 'Uses electricity and water at home and wants to know what the change means for the lights and the tap.' }
   ];
   var PAGES = [
     { id: '', label: 'Investigate' },
@@ -235,6 +236,27 @@
   // What one change means for one role. Text only; the numbers stay in the finding.
   function reading(roleId, b, v, st) {
     var what = v.long, dir = st && st.proven ? (st.slope > 0 ? 'up' : 'down') : 'none', snow = v.id === 'swe' || v.id === 'snowdepth';
+    if (roleId === 'resident') {
+      // Plain consequences only. The data cannot be turned into kilowatt-hours for a household, so no such figure is given.
+      var hydro = b.id === 'naryn' ? ' This river feeds the Toktogul cascade, the country\'s largest source of electricity.' : '';
+      if (dir === 'none') return 'No significant change in ' + what + ', so on this evidence there is nothing to expect differently at home.';
+      if (v.id === 'melt') {
+        return dir === 'down'
+          ? 'The snow that fills the reservoirs melts earlier in the year. Winter electricity then depends more on how much water the dams hold back through summer.' + hydro
+          : 'The snow that fills the reservoirs melts later in the year, closer to when the water is needed.' + hydro;
+      }
+      if (snow || v.id === 'snowfall' || v.id === 'precip') {
+        return (dir === 'up' ? 'More' : 'Less') + ' water is arriving above the dams. Over many years that means ' + (dir === 'up' ? 'more' : 'less') +
+          ' water to make electricity from, though in any single year the weather decides.' + hydro;
+      }
+      if (v.id === 'temp' || v.id === 'frost' || v.id === 'lastfrost' || v.id === 'frostfree' || v.id === 'summer') {
+        var warmer = (v.id === 'frost' || v.id === 'lastfrost') ? dir === 'down' : dir === 'up';
+        return warmer
+          ? 'It is getting warmer here. Winters ask for a little less heating, while hotter summers raise the demand for water and cooling.'
+          : 'It is getting cooler here. Winters ask for more heating.';
+      }
+      return 'This change matters more for fields than for homes: it affects how much water the land itself uses.';
+    }
     if (roleId === 'negotiator') {
       if (dir === 'none') return 'No significant change in ' + what + ' for the ' + b.name + ' basin. Neither side can use this record to claim a trend.';
       return 'In the ' + b.name + ' basin, ' + what + ' is ' + (v.date ? 'moving ' + dirWord(v, dir === 'up') : dir === 'up' ? 'rising' : 'falling') +
@@ -553,6 +575,7 @@
     if (unproven.length) {
       lines.push(ro.id === 'negotiator'
         ? 'No significant change: ' + listWords(unproven) + '. Neither side can use this record to claim a trend there.'
+        : ro.id === 'resident' ? 'No significant change: ' + listWords(unproven) + '.'
         : 'No significant change: ' + listWords(unproven) + '. This record gives no reason to change plans on those.');
     }
     var aside;

@@ -2,4 +2,5 @@
 .DS_Store
 __pycache__/
 backup-v1/
-ai-config.js
+.vercel
+.env*

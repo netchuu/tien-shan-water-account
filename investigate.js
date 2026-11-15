@@ -261,7 +261,7 @@
       '<div class="cards">' + cards + '</div>' +
       (q.calendar ? calendar(b.id) : '') +
       askBox(b) +
-      '<p class="caption">' + (b.custom ? '' : '<a href="' + WA.link('statement', { record: 'long', from: 0, basin: b.id }) + '">What this means for a water engineer, a dam dispatcher or a negotiator</a>. ') +
+      '<p class="caption">' + (b.custom ? '' : '<a href="' + WA.link('statement', { record: 'long', from: 0, basin: b.id }) + '">What this means for a resident, a water engineer, a dam dispatcher or a negotiator</a>. ') +
       '<a href="' + WA.link('trend', { record: 'long', from: 0, basin: b.id, variable: q.key, month: 'year' }) + '">Every variable for ' + b.name + '</a>. ' +
       'Past record, not a forecast; no glaciers in the data. <a href="' + WA.link('method') + '">Limits</a>.</p></section>';
   }
@@ -350,7 +350,6 @@
   // The figures always come from the tool. If an AI key is configured (ai-config.js), Gemini writes the answer
   // from those figures; otherwise, or if the call fails, the tool's own rule-based answer is shown.
   var AI = window.WATER_AI || null;
-  var AI_MODELS = AI ? [AI.model || 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'] : [];
   function briefing(b, question) {
     var named = question.match(/\b(20[2-9]\d)\b/), year = named ? +named[1] : new Date().getFullYear() + 1;
     var est = longRecord.variables.map(function (id) { return estimateText(b, id, year); }).filter(Boolean);
@@ -360,14 +359,16 @@
       (WA.EXTRA.futureLines && WA.EXTRA.futureLines(b).length ? '\nNASA climate-model projections (NEX-GDDP-CMIP6, middle emissions path):\n- ' + WA.EXTRA.futureLines(b).join('\n- ') : '') +
       '\nLimits: estimates come from the past record and are not weather forecasts; model and reanalysis data, not ground measurements; no glaciers in the data; grid cells of about 50 km.';
   }
-  function callGemini(model, body) {
-    return fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(AI.key), {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body)
-    }).then(function (res) {
+  // Through the site's own server function when one is configured (the key stays on the server);
+  // straight to Google only when a key is present in a local, unpublished ai-config.js.
+  function callAI(body) {
+    var direct = !AI.endpoint;
+    var url = direct ? 'https://generativelanguage.googleapis.com/v1beta/models/' + (AI.model || 'gemini-3.5-flash-lite') + ':generateContent?key=' + encodeURIComponent(AI.key) : AI.endpoint;
+    return fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then(function (res) {
       return res.json().then(function (data) {
-        if (!res.ok) throw new Error(data && data.error && data.error.message ? data.error.message : 'status ' + res.status);
+        if (!res.ok) throw new Error(data && data.error ? (data.error.message || data.error) : 'status ' + res.status);
         var cand = (data.candidates || [])[0], parts = cand && cand.content && cand.content.parts ? cand.content.parts : [];
-        var text = parts.map(function (p) { return p.text || ''; }).join('').trim();
+        var text = direct ? parts.map(function (p) { return p.text || ''; }).join('').trim() : String(data.text || '').trim();
         if (!text) throw new Error('the answer came back empty');
         return text;
       });
@@ -384,7 +385,7 @@
     inv.chat.push({ role: 'user', text: question });
     var input = document.querySelector('form[data-form="ask"] input[name="q"]');
     if (input) input.value = '';
-    if (!AI || !AI.key) { answer('tool', rules, ''); return; }
+    if (!AI || !(AI.key || AI.endpoint)) { answer('tool', rules, ''); return; }
     inv.asking = true;
     answer('wait', ['Thinking. This takes a few seconds.'], '');
     var body = {
@@ -395,7 +396,7 @@
       contents: history.concat([{ role: 'user', parts: [{ text: question }] }]),
       generationConfig: { maxOutputTokens: 1500, temperature: 0.4 }
     };
-    callGemini(AI_MODELS[0], body).catch(function () { return callGemini(AI_MODELS[1], body); }).then(function (text) {
+    callAI(body).then(function (text) {
       inv.asking = false;
       answer('ai', text.split(/\n+/), 'Written by Gemini from the figures the tool calculated. Check any number against the cards above.');
     }).catch(function (err) {
