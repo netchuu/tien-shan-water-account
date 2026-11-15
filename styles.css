@@ -274,3 +274,6 @@ a.more { font-size: 17px; margin-top: auto; align-self: flex-start; padding: 8px
 .steps .btn.go { margin-top: 6px; }
 
 .future { font-size: 17px; color: var(--text); border-left: 3px solid var(--outline); padding-left: 10px; }
+
+/* The answer being typed out */
+.turn.typing p:not(.caption):not(:empty):last-of-type::after { content: ''; display: inline-block; width: 8px; height: 1em; margin-left: 3px; vertical-align: text-bottom; background: var(--text); }

@@ -278,7 +278,9 @@
   // Text goes in through textContent, so nothing typed or returned is ever treated as HTML.
   function drawChat() {
     var box = document.getElementById('chat');
+    stopTyping();
     if (!box) return;
+    box.removeAttribute('aria-busy');
     box.innerHTML = chatHtml();
     Array.prototype.forEach.call(box.children, function (el, k) {
       var t = inv.chat[k], ps = el.querySelectorAll('p');
@@ -342,10 +344,42 @@
     if (!lines.length && !notes.length) lines.push('No significant trend for ' + b.name + ' on this record.');
     return notes.concat(lines);
   }
+  var typing = null; // the timer of the answer being typed out
+  function stopTyping() { if (typing) { clearInterval(typing); typing = null; } }
+  // Types the newest AI answer out a few characters at a time. The full text is already stored,
+  // so any redraw (or a visitor who prefers no motion) simply shows it whole.
+  function typeOut() {
+    var box = document.getElementById('chat');
+    var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!box || !box.lastChild || still) return;
+    var turn = inv.chat[inv.chat.length - 1], ps = box.lastChild.querySelectorAll('p');
+    var targets = turn.parts.map(function (text, n) { return { el: ps[n + 1], text: text }; });
+    var note = turn.by ? ps[ps.length - 1] : null, at = 0, pos = 0;
+    targets.forEach(function (t) { t.el.textContent = ''; });
+    if (note) note.style.visibility = 'hidden';
+    box.setAttribute('aria-busy', 'true');
+    box.lastChild.classList.add('typing');
+    typing = setInterval(function () {
+      var t = targets[at];
+      if (!t || !document.body.contains(t.el)) { finish(); return; }
+      pos = Math.min(t.text.length, pos + 3);
+      t.el.textContent = t.text.slice(0, pos);
+      if (pos >= t.text.length) { at++; pos = 0; }
+      box.scrollTop = box.scrollHeight;
+      if (at >= targets.length) finish();
+    }, 16);
+    function finish() {
+      stopTyping();
+      box.removeAttribute('aria-busy');
+      if (box.lastChild) box.lastChild.classList.remove('typing');
+      if (note) note.style.visibility = '';
+    }
+  }
   function answer(role, parts, by) {
     if (inv.chat.length && inv.chat[inv.chat.length - 1].role === 'wait') inv.chat.pop();
     inv.chat.push({ role: role, parts: parts, by: by });
     drawChat();
+    if (role === 'ai') typeOut();
   }
   // The figures always come from the tool. If an AI key is configured (ai-config.js), Gemini writes the answer
   // from those figures; otherwise, or if the call fails, the tool's own rule-based answer is shown.
