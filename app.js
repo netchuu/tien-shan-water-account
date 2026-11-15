@@ -656,7 +656,7 @@
     });
     var conflicts = D.basins.map(function (b) { return snowConflict(b.id); }).filter(Boolean);
     return '<div class="prose wide"><h1 class="title">Method and data</h1>' +
-      '<p>Every figure in this tool is calculated in your browser from the files listed here. Nothing is typed in by hand. The sentences come from fixed templates and rules. No AI writes anything while you use the tool.</p>' +
+      '<p>Every figure in this tool is calculated in your browser from the files listed here. Nothing is typed in by hand. The sentences on the cards come from fixed templates. In the question box, Google Gemini puts the answer into plain words: the tool calculates every figure and hands it over, and the AI is told to use only those. If the AI is not available, the box answers from the tool\'s own rules.</p>' +
       '<h2>How a trend is tested</h2><ol>' +
       '<li>Take monthly values for the basin: the mean of every NASA grid cell inside the basin box.</li>' +
       '<li>Remove the seasonal cycle by comparing like with like: whole years with whole years, or one month with the same month in other years. A year counts only if all twelve months are present.</li>' +
@@ -670,6 +670,7 @@
       '<li><strong>Frost-free season.</strong> The days between the last spring frost and the first frost after 31 July.</li>' +
       '<li><strong>Summer days.</strong> Days with a maximum of 25 °C or more.</li></ul>' +
       '<p>These use daily snow depth and temperature from NASA POWER (MERRA-2), averaged over the basin\'s grid cells, from 1981 to this month. The snow depth is modelled, not seen by satellite, and it is one source: no second product has checked the melt dates yet. The definitions are ours and are written for the northern hemisphere.</p>' +
+      '<h2>Estimate for a coming year</h2><p>For a year up to ten years past the record, the tool gives an estimate and a range. Where the trend is proven and is not a single step, the estimate is the trend line at that year; otherwise it is the average of the last ten years. The range is where 8 in 10 past years fell around that line or average. It describes a typical year, not the weather of that year.</p>' +
       '<h2>Projections</h2><p>The tool does not forecast. Where it shows a year after the record ends, on the map over time or in a case file, it extends the fitted Theil-Sen line of a change that is statistically significant and is not a single step. Places with no significant trend get no projection. No AI or machine-learning model produces these numbers: with one value a year there are too few data points to train one honestly.</p>' +
       (EXTRA.methodExtra ? EXTRA.methodExtra() : '') +
       '<h2>Two records</h2><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Record</th><th scope="col">What it is</th><th scope="col">Variables</th><th scope="col">Basins</th></tr></thead><tbody>' + recRows + '</tbody></table></div>' +
@@ -709,7 +710,7 @@
       '<h2>Who it is for</h2><ul>' + ROLES.map(function (r) { return '<li><strong>' + r.label + '.</strong> ' + r.job + '</li>'; }).join('') + '</ul>' +
       '<h2>Code and data</h2><p><a href="https://github.com/netchuu/tien-shan-water-account">github.com/netchuu/tien-shan-water-account</a></p>' +
       '<p>The data are open NASA products. To add a basin, add its box to tools/build_data.py, download its files and run the script.</p>' +
-      '<h2>Use of AI</h2><p>AI tools helped with research, code and text during the hackathon. The figures on screen are calculated from NASA data by the code in this repository, and the statements use fixed templates.</p>' +
+      '<h2>Use of AI</h2><p>AI tools helped with research, code and text during the hackathon. The figures on screen are calculated from NASA data by the code in this repository, and the statements use fixed templates. Google Gemini words the answers in the question box from figures the tool calculates.</p>' +
       '<h2>Next steps</h2><ul><li>MODIS satellite snow cover, to check the modelled melt dates.</li><li>True basin outlines in place of rectangles.</li><li>Kyrgyz and Russian versions.</li><li>A yearly update script.</li></ul></div>';
   }
 
